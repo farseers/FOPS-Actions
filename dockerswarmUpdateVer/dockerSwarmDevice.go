@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/farseer-go/collections"
-	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/utils/exec"
 )
 
@@ -33,7 +32,7 @@ func (dockerSwarmDevice) ExistsDocker(appName string) bool {
 		if lst.Contains("[]") && lst.ContainsPrefix("Status: Error: no such service:") {
 			return false
 		}
-		exception.ThrowWebException(403, "获取应用信息时失败。")
+		progress <- "获取应用信息时失败。"
 		return false
 	}
 	if lst.Contains("[]") && lst.ContainsPrefix("Status: Error: no such service:") {
