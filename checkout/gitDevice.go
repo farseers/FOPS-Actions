@@ -68,10 +68,6 @@ func (device *gitDevice) CloneOrPull(git GitEO, progress chan string, ctx contex
 	} else {
 		execSuccess = device.clone(gitPath, git.GetAuthHub(), git.Branch, progress, ctx)
 	}
-
-	if !execSuccess {
-		progress <- "拉取出错了。"
-	}
 	return execSuccess
 }
 

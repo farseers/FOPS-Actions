@@ -26,7 +26,7 @@ func main() {
 	waitProgress()
 
 	if result != 0 {
-		fmt.Println(flog.Red("镜像打包出错了"))
+		fmt.Println("镜像打包出错了")
 		os.Exit(-1)
 	}
 }
