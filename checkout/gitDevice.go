@@ -72,7 +72,6 @@ func (device *gitDevice) CloneOrPull(git GitEO, progress chan string, ctx contex
 }
 
 func (device *gitDevice) CloneOrPullAndDependent(lstGit []GitEO, progress chan string, ctx context.Context) bool {
-	progress <- "---------------------------------------------------------"
 	progress <- "开始拉取git代码"
 	var sw sync.WaitGroup
 	result := true
