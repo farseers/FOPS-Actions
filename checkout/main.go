@@ -47,5 +47,5 @@ func setupGit() {
 	}
 
 	// 没有安装git
-	exec.RunShellCommand("apk add git", nil, "", true)
+	exec.RunShell("apk add git", progress, nil, "", true)
 }
