@@ -14,9 +14,8 @@ func main() {
 	// git操作驱动
 	device := gitDevice{}
 
-	for _, git := range With.Gits {
+	for index, git := range With.Gits {
 		// 克隆或更新
-		progress <- "开始拉取git:" + git.Hub
 		result := device.CloneOrPull(git, progress, context.Background())
 		if result {
 			dest := filepath.Join(DistRoot, git.GetRelativePath())
@@ -25,6 +24,9 @@ func main() {
 		} else {
 			fmt.Println("拉取出错了")
 			os.Exit(-1)
+		}
+		if index+1 < len(With.Gits) {
+			progress <- "---------------------------------------------------------"
 		}
 	}
 
