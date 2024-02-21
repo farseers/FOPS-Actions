@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"os"
 	"path/filepath"
@@ -10,6 +11,8 @@ import (
 
 func main() {
 	go printProgress()
+
+	setupGit()
 
 	// git操作驱动
 	device := gitDevice{}
@@ -32,4 +35,13 @@ func main() {
 
 	// 等待退出
 	waitProgress()
+}
+
+// 安装git
+func setupGit() {
+	_, output := exec.RunShellCommand("which git", nil, "", false)
+	// 没有安装git
+	if len(output) == 0 || <-output != "/usr/bin/git" {
+		exec.RunShellCommand("apk add git", nil, "", true)
+	}
 }

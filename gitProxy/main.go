@@ -15,9 +15,20 @@ func main() {
 		os.Exit(-1)
 	}
 
+	setupGit()
+
 	cmd := fmt.Sprintf("git config --global http.https://github.com.proxy %s && git config --global https.https://github.com.proxy %s", With.Proxy, With.Proxy)
 	exec.RunShell(cmd, progress, nil, "", true)
 
 	// 等待退出
 	waitProgress()
+}
+
+// 安装git
+func setupGit() {
+	_, output := exec.RunShellCommand("which git", nil, "", false)
+	// 没有安装git
+	if len(output) == 0 || <-output != "/usr/bin/git" {
+		exec.RunShellCommand("apk add git", nil, "", true)
+	}
 }
