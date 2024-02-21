@@ -21,27 +21,21 @@ var (
 )
 
 type WithAvg struct {
-	AppName           string `json:"appName"`                 // 应用名称（链路追踪）
-	BuildId           int64  `json:"buildId"`                 // 构建主键
-	BuildNumber       int    `json:"buildNumber"`             // 构建版本号
-	AppAbsolutePath   string `json:"appAbsolutePath"`         // 应用的git根目录
-	DockerImage       string `json:"dockerImage"`             // Docker镜像
-	DockerfilePath    string `json:"dockerfilePath"`          // Dockerfile路径
-	DockerHub         string `json:"dockerHub"`               // 托管地址
-	DockerUserName    string `json:"dockerUserName"`          // 账户名称
-	DockerUserPwd     string `json:"dockerUserPwd"`           // 账户密码
-	DockerNodeRole    string `json:"dockerNodeRole"`          // 容器节点角色 manager or worker
-	DockerNetwork     string `json:"dockerNetwork"`           // Docker网络
-	DockerReplicas    int    `json:"dockerReplicas"`          // 副本数量
-	AdditionalScripts string `json:"dockerAdditionalScripts"` // 首次创建应用时附加脚本
-
-	GitHub      string `json:"gitHub"`      // git地址
-	GitBranch   string `json:"gitBranch"`   // Git分支
-	GitUserName string `json:"gitUserName"` // 账户名称
-	GitUserPwd  string `json:"gitUserPwd"`  // 账户密码
-	GitPath     string `json:"gitPath"`     // 存储目录
-
-	Proxy string `json:"proxy"` // Git代理
+	AppName           string  `json:"appName"`                 // 应用名称（链路追踪）
+	BuildId           int64   `json:"buildId"`                 // 构建主键
+	BuildNumber       int     `json:"buildNumber"`             // 构建版本号
+	AppAbsolutePath   string  `json:"appAbsolutePath"`         // 应用的git根目录
+	DockerImage       string  `json:"dockerImage"`             // Docker镜像
+	DockerfilePath    string  `json:"dockerfilePath"`          // Dockerfile路径
+	DockerHub         string  `json:"dockerHub"`               // 托管地址
+	DockerUserName    string  `json:"dockerUserName"`          // 账户名称
+	DockerUserPwd     string  `json:"dockerUserPwd"`           // 账户密码
+	DockerNodeRole    string  `json:"dockerNodeRole"`          // 容器节点角色 manager or worker
+	DockerNetwork     string  `json:"dockerNetwork"`           // Docker网络
+	DockerReplicas    int     `json:"dockerReplicas"`          // 副本数量
+	AdditionalScripts string  `json:"dockerAdditionalScripts"` // 首次创建应用时附加脚本
+	Gits              []GitEO `json:"gits"`                    // Git
+	Proxy             string  `json:"proxy"`                   // Git代理
 }
 
 func init() {
