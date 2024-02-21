@@ -40,8 +40,12 @@ func main() {
 // 安装git
 func setupGit() {
 	_, output := exec.RunShellCommand("which git", nil, "", false)
-	// 没有安装git
-	if len(output) == 0 || <-output != "/usr/bin/git" {
-		exec.RunShellCommand("apk add git", nil, "", true)
+	for _, o := range output {
+		if o == "/usr/bin/git" {
+			return
+		}
 	}
+
+	// 没有安装git
+	exec.RunShellCommand("apk add git", nil, "", true)
 }

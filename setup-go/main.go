@@ -60,7 +60,7 @@ func main() {
 
 func getGoVersion() string {
 	_, receiveOutput := exec.RunShellCommand("/usr/local/go/bin/go version", nil, "", false)
-	listFromChan := collections.NewListFromChan(receiveOutput)
+	listFromChan := collections.NewList(receiveOutput...)
 	fmt.Println(listFromChan.Last())
 	vers := strings.Split(listFromChan.Last(), " ")
 	var ver string

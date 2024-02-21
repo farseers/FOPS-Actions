@@ -10,12 +10,12 @@ import (
 func main() {
 	go printProgress()
 
+	setupGit()
+
 	if With.Proxy == "" {
 		fmt.Println(flog.Red("未设置proxy"))
 		os.Exit(-1)
 	}
-
-	setupGit()
 
 	cmd := fmt.Sprintf("git config --global http.https://github.com.proxy %s && git config --global https.https://github.com.proxy %s", With.Proxy, With.Proxy)
 	exec.RunShell(cmd, progress, nil, "", true)
@@ -27,8 +27,12 @@ func main() {
 // 安装git
 func setupGit() {
 	_, output := exec.RunShellCommand("which git", nil, "", false)
-	// 没有安装git
-	if len(output) == 0 || <-output != "/usr/bin/git" {
-		exec.RunShellCommand("apk add git", nil, "", true)
+	for _, o := range output {
+		if o == "/usr/bin/git" {
+			return
+		}
 	}
+
+	// 没有安装git
+	exec.RunShellCommand("apk add git", nil, "", true)
 }
