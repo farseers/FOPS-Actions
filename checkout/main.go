@@ -7,6 +7,7 @@ import (
 	"github.com/farseer-go/utils/file"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func main() {
@@ -18,16 +19,25 @@ func main() {
 	device := gitDevice{}
 
 	for index, git := range With.Gits {
-		// 克隆或更新
-		result := device.CloneOrPull(git, progress, context.Background())
-		if result {
-			dest := filepath.Join(DistRoot, git.GetRelativePath())
-			progress <- "源文件" + git.GetAbsolutePath() + " 复制到 " + dest
-			file.CopyFolder(git.GetAbsolutePath(), dest)
-		} else {
+		result := false
+		// 支持重试3次
+		for tryCount := 1; tryCount < 4; tryCount++ {
+			// 克隆或更新
+			if result = device.CloneOrPull(git, progress, context.Background()); result {
+				break
+			}
+			time.Sleep(time.Second)
+			fmt.Printf("尝试第%d次拉取/n", tryCount+1)
+		}
+
+		if !result {
 			fmt.Println("拉取出错了")
 			os.Exit(-1)
 		}
+		dest := filepath.Join(DistRoot, git.GetRelativePath())
+		progress <- "源文件" + git.GetAbsolutePath() + " 复制到 " + dest
+		file.CopyFolder(git.GetAbsolutePath(), dest)
+
 		if index+1 < len(With.Gits) {
 			progress <- "---------------------------------------------------------"
 		}
