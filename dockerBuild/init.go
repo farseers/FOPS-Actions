@@ -25,7 +25,7 @@ type WithAvg struct {
 	BuildId           int64  `json:"buildId"`                 // 构建主键
 	BuildNumber       int    `json:"buildNumber"`             // 构建版本号
 	AppAbsolutePath   string `json:"appAbsolutePath"`         // 应用的git根目录
-	DockerImage       string `json:"dockerImage"`             // Docker镜像
+	DockerImage       string `json:"dockerImage"`             // Docker镜像名称，如hub.fsgit.com/fops:1
 	DockerfilePath    string `json:"dockerfilePath"`          // Dockerfile路径
 	DockerHub         string `json:"dockerHub"`               // 托管地址
 	DockerUserName    string `json:"dockerUserName"`          // 账户名称
