@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/utils/exec"
+	"net/http"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -20,6 +25,37 @@ func main() {
 		progress <- "镜像上传完成。"
 	}
 
+	// 需要更新远程fops的仓库版本
+	if With.FopsAddr != "" {
+		if !strings.HasSuffix(With.FopsAddr, "/") {
+			With.FopsAddr += "/"
+		}
+		With.FopsAddr += "apps/updateDockerImage"
+
+		avg := map[string]any{"AppName": With.AppName, "dockerImage": With.DockerImage, "buildNumber": With.BuildNumber, "clusterId": 0}
+		if With.SyncCluster {
+			avg["clusterId"] = With.ClusterId
+		}
+		bodyByte, _ := json.Marshal(avg)
+
+		newRequest, _ := http.NewRequest("POST", With.FopsAddr, bytes.NewReader(bodyByte))
+		newRequest.Header.Set("Content-Type", "application/json")
+
+		// 读取配置
+		client := &http.Client{}
+		rsp, err := client.Do(newRequest)
+		if err != nil {
+			fmt.Println("更新远程fops的仓库版本失败：" + err.Error())
+			os.Exit(-1)
+		}
+
+		apiRsp := core.NewApiResponseByReader[any](rsp.Body)
+		if apiRsp.StatusCode != 200 {
+			fmt.Printf("更新远程fops的仓库版本失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
+			os.Exit(-1)
+		}
+	}
+
 	// 等待退出
 	waitProgress()
 
@@ -30,7 +66,8 @@ func main() {
 }
 
 func loginDockerHub() {
-	if With.DockerHub != "" && With.DockerUserName != "" {
+	// 私有仓库，可以无用户名密码。
+	if With.DockerUserName != "" && With.DockerUserPwd != "" {
 		var result = exec.RunShell("docker login "+With.DockerHub+" -u "+With.DockerUserName+" -p "+With.DockerUserPwd, progress, nil, "", true)
 		if result != 0 {
 			fmt.Println("镜像仓库登陆失败。")

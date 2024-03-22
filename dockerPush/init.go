@@ -41,7 +41,11 @@ type WithAvg struct {
 	GitUserPwd  string `json:"gitUserPwd"`  // 账户密码
 	GitPath     string `json:"gitPath"`     // 存储目录
 
-	Proxy string `json:"proxy"` // Git代理
+	Proxy     string `json:"proxy"`     // Git代理
+	ClusterId string `json:"clusterId"` // 集群ID
+
+	FopsAddr    string `json:"fopsAddr"`    // 远程fops地址
+	SyncCluster bool   `json:"syncCluster"` // 是否要同步集群
 }
 
 func init() {
