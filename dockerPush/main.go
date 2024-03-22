@@ -32,11 +32,9 @@ func main() {
 		}
 		With.FopsAddr += "apps/updateDockerImage"
 
-		avg := map[string]any{"AppName": With.AppName, "dockerImage": With.DockerImage, "buildNumber": With.BuildNumber, "clusterId": 0}
-		if With.SyncCluster {
-			avg["clusterId"] = With.ClusterId
-		}
+		avg := map[string]any{"AppName": With.AppName, "dockerImage": With.DockerImage, "buildNumber": With.BuildNumber, "clusterId": With.FopsClusterId}
 		bodyByte, _ := json.Marshal(avg)
+		progress <- "开始更新远程fops：" + With.FopsAddr + " " + string(bodyByte)
 
 		newRequest, _ := http.NewRequest("POST", With.FopsAddr, bytes.NewReader(bodyByte))
 		newRequest.Header.Set("Content-Type", "application/json")
@@ -54,6 +52,7 @@ func main() {
 			fmt.Printf("更新远程fops的仓库版本失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
 			os.Exit(-1)
 		}
+		progress <- "更新成功：" + apiRsp.StatusMessage
 	}
 
 	// 等待退出

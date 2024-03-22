@@ -44,8 +44,8 @@ type WithAvg struct {
 	Proxy     string `json:"proxy"`     // Git代理
 	ClusterId string `json:"clusterId"` // 集群ID
 
-	FopsAddr    string `json:"fopsAddr"`    // 远程fops地址
-	SyncCluster bool   `json:"syncCluster"` // 是否要同步集群
+	FopsAddr      string `json:"fopsAddr"`      // 远程fops地址
+	FopsClusterId int    `json:"fopsClusterId"` // 是否要同步集群
 }
 
 func init() {
