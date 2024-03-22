@@ -23,5 +23,5 @@ func setupNpm() {
 	}
 
 	// 没有安装git
-	exec.RunShell("apk add nodejs npm && npm install -g cnpm --registry=https://registry.npm.taobao.org", progress, nil, "", true)
+	exec.RunShell("apk add nodejs npm", progress, nil, "", true)
 }

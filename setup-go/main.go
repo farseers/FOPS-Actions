@@ -74,6 +74,6 @@ func getGoVersion() string {
 func exportEnv() {
 	// export PATH=$PATH:/usr/local/go/bin
 	exec.RunShellCommand("export PATH=$PATH:/usr/local/go/bin", nil, "", true)
-	//exec.RunShellCommand("go env -w GO111MODULE=on", nil, "", true)
-	//exec.RunShellCommand("go env -w GOPROXY=https://goproxy.cn,direct", nil, "", true)
+	exec.RunShellCommand("go env -w GO111MODULE=on", nil, "", true)
+	exec.RunShellCommand("go env -w GOPROXY=https://goproxy.cn,direct", nil, "", true)
 }
