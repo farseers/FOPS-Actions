@@ -13,7 +13,7 @@ type dockerSwarmDevice struct {
 func (dockerSwarmDevice) SetImages(appName string, dockerImages string, progress chan string, ctx context.Context) bool {
 	progress <- "开始更新Docker Swarm的镜像版本。"
 
-	var exitCode = exec.RunShellContext(ctx, fmt.Sprintf("docker service update --image %s %s", dockerImages, appName), progress, nil, "", true)
+	var exitCode = exec.RunShellContext(ctx, fmt.Sprintf("docker service update --image %s --update-delay 10s %s", dockerImages, appName), progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "Docker Swarm更新镜像失败。"
 		return false
