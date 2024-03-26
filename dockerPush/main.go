@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -32,7 +33,7 @@ func main() {
 		}
 		With.FopsAddr += "apps/updateDockerImage"
 
-		avg := map[string]any{"AppName": With.AppName, "dockerImage": With.DockerImage, "buildNumber": With.BuildNumber, "clusterId": With.FopsClusterId}
+		avg := map[string]any{"appName": With.AppName, "dockerImage": With.DockerImage, "buildNumber": With.BuildNumber, "clusterId": With.FopsClusterId, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd}
 		bodyByte, _ := json.Marshal(avg)
 		progress <- "开始更新远程fops：" + With.FopsAddr + " " + string(bodyByte)
 
@@ -44,12 +45,16 @@ func main() {
 		rsp, err := client.Do(newRequest)
 		if err != nil {
 			fmt.Println("更新远程fops的仓库版本失败：" + err.Error())
+			waitProgress()
+			time.Sleep(time.Second)
 			os.Exit(-1)
 		}
 
 		apiRsp := core.NewApiResponseByReader[any](rsp.Body)
 		if apiRsp.StatusCode != 200 {
 			fmt.Printf("更新远程fops的仓库版本失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
+			waitProgress()
+			time.Sleep(time.Second)
 			os.Exit(-1)
 		}
 		progress <- "更新成功：" + apiRsp.StatusMessage
