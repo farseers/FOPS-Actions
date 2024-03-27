@@ -23,16 +23,16 @@ func main() {
 		With.GoDownload = "https://studygolang.com/dl/golang/" + With.GoVersion + ".linux-amd64.tar.gz"
 	}
 
-	fmt.Printf("go环境要求为：%s\n", flog.Blue(With.GoVersion))
+	fmt.Printf("go环境要求为：%s\n", With.GoVersion)
 
 	// 先判断本地是否有go目录
 	if file.IsExists("/usr/local/go") {
 		ver := getGoVersion()
 		if ver == With.GoVersion {
-			fmt.Printf("当前go环境正确：%s\n", flog.Green(ver))
+			fmt.Printf("当前go环境正确：%s\n", ver)
 			return
 		}
-		fmt.Printf("当前go环境不正确：%s\n", flog.Red(ver))
+		fmt.Printf("当前go环境不正确：%s\n", ver)
 		fmt.Println(flog.Yellow("移除旧目录/usr/local/go"))
 		file.Delete("/usr/local/go")
 	}
@@ -52,7 +52,7 @@ func main() {
 		exportEnv()
 	}
 
-	fmt.Printf("go环境安装完成，版本：%s\n", flog.Blue(getGoVersion()))
+	fmt.Printf("go环境安装完成，版本：%s\n", getGoVersion())
 
 	// 等待退出
 	waitProgress()
