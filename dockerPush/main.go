@@ -72,7 +72,11 @@ func main() {
 func loginDockerHub() {
 	// 私有仓库，可以无用户名密码。
 	if With.DockerUserName != "" && With.DockerUserPwd != "" {
-		var result = exec.RunShell("docker login "+With.DockerHub+" -u "+With.DockerUserName+" -p "+With.DockerUserPwd, progress, nil, "", true)
+		dockerHub := With.DockerHub
+		if !strings.Contains(With.DockerHub, ".") {
+			dockerHub = ""
+		}
+		var result = exec.RunShell("docker login "+dockerHub+" -u "+With.DockerUserName+" -p "+With.DockerUserPwd, progress, nil, "", true)
 		if result != 0 {
 			fmt.Println("镜像仓库登陆失败。")
 			os.Exit(-1)
