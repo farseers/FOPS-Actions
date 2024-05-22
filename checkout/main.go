@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/async"
 	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"os"
@@ -12,35 +14,46 @@ import (
 
 func main() {
 	go printProgress()
-
 	setupGit()
+
+	mLog := make(map[int][]string)
 
 	// git操作驱动
 	device := gitDevice{}
-
+	worker := async.New()
 	for index, git := range With.Gits {
-		result := false
-		// 支持重试3次
-		for tryCount := 1; tryCount < 4; tryCount++ {
-			// 克隆或更新
-			if result = device.CloneOrPull(git, progress, context.Background()); result {
-				break
+		worker.Add(func() {
+			result := false
+			// 支持重试3次
+			for tryCount := 1; tryCount < 4; tryCount++ {
+				// 克隆或更新
+				g := make(chan string, 1000)
+				result = device.CloneOrPull(git, g, context.Background())
+				mLog[index] = append(mLog[index], collections.NewListFromChan(g).ToArray()...)
+
+				if result {
+					break
+				}
+				time.Sleep(time.Second)
+				mLog[index] = append(mLog[index], fmt.Sprintf("尝试第%d次拉取/n", tryCount+1))
 			}
-			time.Sleep(time.Second)
-			fmt.Printf("尝试第%d次拉取/n", tryCount+1)
-		}
 
-		if !result {
-			fmt.Println("拉取出错了")
-			os.Exit(-1)
-		}
-		dest := filepath.Join(DistRoot, git.GetRelativePath())
-		progress <- "源文件" + git.GetAbsolutePath() + " 复制到 " + dest
-		file.CopyFolder(git.GetAbsolutePath(), dest)
+			if !result {
+				fmt.Println("拉取出错了")
+				os.Exit(-1)
+			}
+			dest := filepath.Join(DistRoot, git.GetRelativePath())
+			mLog[index] = append(mLog[index], "源文件"+git.GetAbsolutePath()+" 复制到 "+dest)
+			file.CopyFolder(git.GetAbsolutePath(), dest)
+		})
+	}
 
-		if index+1 < len(With.Gits) {
-			progress <- "---------------------------------------------------------"
+	_ = worker.Wait()
+	for _, logs := range mLog {
+		for _, log := range logs {
+			fmt.Println(log)
 		}
+		fmt.Println("---------------------------------------------------------")
 	}
 
 	// 等待退出
