@@ -24,6 +24,8 @@ type WithAvg struct {
 	AppName           string `json:"appName"`                 // 应用名称（链路追踪）
 	BuildId           int64  `json:"buildId"`                 // 构建主键
 	BuildNumber       int    `json:"buildNumber"`             // 构建版本号
+	FopsAddr          string `json:"fopsAddr"`                // 集群地址
+	FScheduleAddr     string `json:"fScheduleAddr"`           // 调度中心地址
 	AppAbsolutePath   string `json:"appAbsolutePath"`         // 应用的git根目录
 	DockerImage       string `json:"dockerImage"`             // Docker镜像
 	DockerfilePath    string `json:"dockerfilePath"`          // Dockerfile路径
@@ -43,9 +45,6 @@ type WithAvg struct {
 
 	Proxy     string `json:"proxy"`     // Git代理
 	ClusterId string `json:"clusterId"` // 集群ID
-
-	FopsAddr      string `json:"fopsAddr"`      // 远程fops地址
-	FopsClusterId int    `json:"fopsClusterId"` // 是否要同步集群
 }
 
 func init() {

@@ -23,6 +23,8 @@ var (
 type WithAvg struct {
 	AppName           string  `json:"appName"`                 // 应用名称（链路追踪）
 	BuildId           int64   `json:"buildId"`                 // 构建主键
+	FopsAddr          string  `json:"fopsAddr"`                // 集群地址
+	FScheduleAddr     string  `json:"fScheduleAddr"`           // 调度中心地址
 	BuildNumber       int     `json:"buildNumber"`             // 构建版本号
 	AppAbsolutePath   string  `json:"appAbsolutePath"`         // 应用的git根目录
 	DockerImage       string  `json:"dockerImage"`             // Docker镜像

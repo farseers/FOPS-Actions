@@ -1,15 +1,10 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/utils/exec"
-	"net/http"
 	"os"
 	"strings"
-	"time"
 )
 
 func main() {
@@ -24,40 +19,6 @@ func main() {
 	var result = exec.RunShell("docker push "+With.DockerImage, progress, nil, "", true)
 	if result == 0 {
 		progress <- "镜像上传完成。"
-	}
-
-	// 需要更新远程fops的仓库版本
-	if With.FopsAddr != "" {
-		if !strings.HasSuffix(With.FopsAddr, "/") {
-			With.FopsAddr += "/"
-		}
-		With.FopsAddr += "apps/updateDockerImage"
-
-		avg := map[string]any{"appName": With.AppName, "dockerImage": With.DockerImage, "buildNumber": With.BuildNumber, "clusterId": With.FopsClusterId, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd}
-		bodyByte, _ := json.Marshal(avg)
-		progress <- "开始更新远程fops：" + With.FopsAddr + " " + string(bodyByte)
-
-		newRequest, _ := http.NewRequest("POST", With.FopsAddr, bytes.NewReader(bodyByte))
-		newRequest.Header.Set("Content-Type", "application/json")
-
-		// 读取配置
-		client := &http.Client{}
-		rsp, err := client.Do(newRequest)
-		if err != nil {
-			fmt.Println("更新远程fops的仓库版本失败：" + err.Error())
-			waitProgress()
-			time.Sleep(time.Second)
-			os.Exit(-1)
-		}
-
-		apiRsp := core.NewApiResponseByReader[any](rsp.Body)
-		if apiRsp.StatusCode != 200 {
-			fmt.Printf("更新远程fops的仓库版本失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
-			waitProgress()
-			time.Sleep(time.Second)
-			os.Exit(-1)
-		}
-		progress <- "更新成功：" + apiRsp.StatusMessage
 	}
 
 	// 等待退出
