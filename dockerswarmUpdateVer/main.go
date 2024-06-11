@@ -50,7 +50,6 @@ func main() {
 
 		// 等待退出
 		waitProgress()
-		os.Exit(-1)
 		return
 	}
 
