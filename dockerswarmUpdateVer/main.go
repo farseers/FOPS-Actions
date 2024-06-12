@@ -20,13 +20,12 @@ func main() {
 		if !strings.HasSuffix(With.FopsAddr, "/") {
 			With.FopsAddr += "/"
 		}
-		With.FopsAddr += "apps/updateDockerImage"
+		fopsAddr := With.FopsAddr + "apps/updateDockerImage"
 
-		avg := map[string]any{"appName": With.AppName, "dockerImage": With.DockerImage, "buildNumber": With.BuildNumber, "clusterId": With.RemoteClusterId, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd}
-		bodyByte, _ := json.Marshal(avg)
-		progress <- "开始更新远程fops：" + With.FopsAddr + " " + string(bodyByte)
+		bodyByte, _ := json.Marshal(map[string]any{"appName": With.AppName, "dockerImage": With.DockerImage, "buildNumber": With.BuildNumber, "clusterId": With.RemoteClusterId, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd})
+		progress <- "开始更新远程fops：" + fopsAddr + " " + string(bodyByte)
 
-		newRequest, _ := http.NewRequest("POST", With.FopsAddr, bytes.NewReader(bodyByte))
+		newRequest, _ := http.NewRequest("POST", fopsAddr, bytes.NewReader(bodyByte))
 		newRequest.Header.Set("Content-Type", "application/json")
 
 		// 读取配置
@@ -34,6 +33,7 @@ func main() {
 		rsp, err := client.Do(newRequest)
 		if err != nil {
 			fmt.Println("更新远程fops的仓库版本失败：" + err.Error())
+			getDockerLog()
 			waitProgress()
 			time.Sleep(time.Second)
 			os.Exit(-1)
@@ -42,6 +42,7 @@ func main() {
 		apiRsp := core.NewApiResponseByReader[any](rsp.Body)
 		if apiRsp.StatusCode != 200 {
 			fmt.Printf("更新远程fops的仓库版本失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
+			getDockerLog()
 			waitProgress()
 			time.Sleep(time.Second)
 			os.Exit(-1)
@@ -74,4 +75,27 @@ func main() {
 
 	// 等待退出
 	waitProgress()
+}
+
+// 更新失败时，获取docker日志
+func getDockerLog() {
+	fopsAddr := With.FopsAddr + "apps/logs/dockerSwarm"
+	bodyByte, _ := json.Marshal(map[string]any{"appName": With.AppName, "tail": 50})
+	newRequest, _ := http.NewRequest("POST", fopsAddr, bytes.NewReader(bodyByte))
+	newRequest.Header.Set("Content-Type", "application/json")
+
+	// 读取配置
+	client := &http.Client{}
+	rsp, err := client.Do(newRequest)
+	if err != nil {
+		fmt.Println("查询Docker日志失败：" + err.Error())
+		return
+	}
+
+	apiRsp := core.NewApiResponseByReader[string](rsp.Body)
+	if apiRsp.StatusCode != 200 {
+		fmt.Printf("查询Docker日志失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
+		return
+	}
+	fmt.Println(apiRsp.Data)
 }
