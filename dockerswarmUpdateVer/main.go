@@ -32,7 +32,7 @@ func main() {
 		client := &http.Client{}
 		rsp, err := client.Do(newRequest)
 		if err != nil {
-			fmt.Println("更新远程fops的仓库版本失败：" + err.Error())
+			progress <- "更新远程fops的仓库版本失败：" + err.Error()
 			getDockerLog()
 			waitProgress()
 			time.Sleep(time.Second)
@@ -41,7 +41,7 @@ func main() {
 
 		apiRsp := core.NewApiResponseByReader[any](rsp.Body)
 		if apiRsp.StatusCode != 200 {
-			fmt.Printf("更新远程fops的仓库版本失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
+			progress <- fmt.Sprintf("更新远程fops的仓库版本失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
 			getDockerLog()
 			waitProgress()
 			time.Sleep(time.Second)
