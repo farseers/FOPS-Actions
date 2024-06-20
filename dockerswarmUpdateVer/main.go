@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"github.com/farseer-go/fs/core"
@@ -29,7 +30,13 @@ func main() {
 		newRequest.Header.Set("Content-Type", "application/json")
 
 		// 读取配置
-		client := &http.Client{}
+		client := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true, // 不验证 HTTPS 证书
+				},
+			},
+		}
 		rsp, err := client.Do(newRequest)
 		if err != nil {
 			progress <- "更新远程fops的仓库版本失败：" + err.Error()
@@ -85,7 +92,13 @@ func getDockerLog() {
 	newRequest.Header.Set("Content-Type", "application/json")
 
 	// 读取配置
-	client := &http.Client{}
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true, // 不验证 HTTPS 证书
+			},
+		},
+	}
 	rsp, err := client.Do(newRequest)
 	if err != nil {
 		fmt.Println("查询Docker日志失败：" + err.Error())
