@@ -37,24 +37,37 @@ func main() {
 				},
 			},
 		}
-		rsp, err := client.Do(newRequest)
-		if err != nil {
-			progress <- "更新远程fops的仓库版本失败：" + err.Error()
-			getDockerLog()
-			waitProgress()
-			time.Sleep(time.Second)
-			os.Exit(-1)
+
+		isSuccess := false
+		// 尝试5次
+		for i := 0; i < 5; i++ {
+			progress <- fmt.Sprintf("尝试第%d次更新", i+1)
+			rsp, err := client.Do(newRequest)
+			if err != nil {
+				progress <- "更新远程fops的仓库版本失败：" + err.Error()
+				time.Sleep(3 * time.Second)
+				continue
+			}
+
+			apiRsp := core.NewApiResponseByReader[any](rsp.Body)
+			if apiRsp.StatusCode != 200 {
+				progress <- fmt.Sprintf("更新远程fops的仓库版本失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
+				time.Sleep(3 * time.Second)
+				continue
+			}
+
+			isSuccess = true
+			progress <- "更新成功：" + apiRsp.StatusMessage
+			break
 		}
 
-		apiRsp := core.NewApiResponseByReader[any](rsp.Body)
-		if apiRsp.StatusCode != 200 {
-			progress <- fmt.Sprintf("更新远程fops的仓库版本失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
+		// 3次还是失败时，读取远程docker日志
+		if !isSuccess {
 			getDockerLog()
 			waitProgress()
 			time.Sleep(time.Second)
 			os.Exit(-1)
 		}
-		progress <- "更新成功：" + apiRsp.StatusMessage
 
 		// 等待退出
 		waitProgress()
