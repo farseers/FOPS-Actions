@@ -17,7 +17,13 @@ func main() {
 
 	progress <- "开始镜像打包。"
 	// 打包
-	var result = exec.RunShell("docker build -t "+With.DockerImage+" --network=host -f "+DockerfilePath+" "+DistRoot, progress, nil, DistRoot, true)
+	cmd := fmt.Sprintf("docker build -t %s --network=host -f %s", With.DockerImage, DockerfilePath)
+	if With.Proxy != "" {
+		cmd += fmt.Sprintf(" --build-arg HTTP_PROXY=%s --build-arg HTTPS_PROXY=%s --build-arg NO_PROXY=localhost,127.0.0.1", With.Proxy, With.Proxy)
+	}
+	cmd += " " + DistRoot
+
+	var result = exec.RunShell(cmd, progress, nil, DistRoot, true)
 	if result == 0 {
 		progress <- "镜像打包完成。"
 	}

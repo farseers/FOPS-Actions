@@ -43,7 +43,7 @@ type WithAvg struct {
 	GitUserPwd  string `json:"gitUserPwd"`  // 账户密码
 	GitPath     string `json:"gitPath"`     // 存储目录
 
-	Proxy string `json:"proxy"` // Git代理
+	Proxy string `json:"proxy"` // 代理
 }
 
 func init() {
