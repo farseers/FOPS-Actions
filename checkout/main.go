@@ -13,7 +13,7 @@ import (
 
 func main() {
 	go printProgress()
-	setupGit()
+	//setupGit()
 
 	// git操作驱动
 	device := gitDevice{}
