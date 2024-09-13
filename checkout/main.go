@@ -27,7 +27,6 @@ func main() {
 			for tryCount := 1; tryCount < 4; tryCount++ {
 				// 克隆或更新
 				result = device.CloneOrPull(gitEO, progress, context.Background())
-
 				if result {
 					break
 				}
