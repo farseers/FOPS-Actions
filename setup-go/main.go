@@ -41,17 +41,6 @@ func main() {
 	savePath := "/home/"
 	fileName := collections.NewList(strings.Split(With.GoDownload, "/")...).Last()
 
-	if With.Proxy != "" {
-		// 如果With.Proxy不是socks5协议，则自动添加socks5协议
-		if index := strings.Index(With.Proxy, "://"); index == -1 {
-			With.Proxy = "socks5://" + With.Proxy
-		} else if !strings.HasPrefix(strings.ToLower(With.Proxy), "socks5://") {
-			With.Proxy = "socks5" + With.Proxy[index:]
-		}
-		if With.Proxy != "" {
-			fmt.Println("使用代理：" + With.Proxy)
-		}
-	}
 	// 下载
 	if _, err := http.Download(With.GoDownload, savePath+fileName, nil, 0, With.Proxy); err != nil {
 		fmt.Println(flog.Red(err.Error()))
