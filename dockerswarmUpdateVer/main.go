@@ -26,33 +26,32 @@ func main() {
 		bodyByte, _ := json.Marshal(map[string]any{"appName": With.AppName, "dockerImage": With.DockerImage, "buildNumber": With.BuildNumber, "clusterId": With.RemoteClusterId, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd})
 		progress <- "开始更新远程fops：" + fopsAddr + " " + string(bodyByte)
 
-		newRequest, _ := http.NewRequest("POST", fopsAddr, bytes.NewReader(bodyByte))
-		newRequest.Header.Set("Content-Type", "application/json")
-
-		// 读取配置
-		client := &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true, // 不验证 HTTPS 证书
-				},
-			},
-		}
-
 		isSuccess := false
 		// 尝试5次
-		for i := 0; i < 5; i++ {
+		for i := 0; i < 10; i++ {
+			newRequest, _ := http.NewRequest("POST", fopsAddr, bytes.NewReader(bodyByte))
+			newRequest.Header.Set("Content-Type", "application/json")
+
+			// 读取配置
+			client := &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{
+						InsecureSkipVerify: true, // 不验证 HTTPS 证书
+					},
+				},
+			}
 			progress <- fmt.Sprintf("尝试第%d次更新", i+1)
 			rsp, err := client.Do(newRequest)
 			if err != nil {
 				progress <- "更新远程fops的仓库版本失败：" + err.Error()
-				time.Sleep(3 * time.Second)
+				time.Sleep(10 * time.Second)
 				continue
 			}
 
 			apiRsp := core.NewApiResponseByReader[any](rsp.Body)
 			if apiRsp.StatusCode != 200 {
 				progress <- fmt.Sprintf("更新远程fops的仓库版本失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
-				time.Sleep(3 * time.Second)
+				time.Sleep(10 * time.Second)
 				continue
 			}
 
