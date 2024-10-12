@@ -10,11 +10,7 @@ import (
 
 func main() {
 	go printProgress()
-
 	loginDockerHub()
-
-	// 上传完后，删除本地镜像
-	defer exec.RunShellCommand("docker rmi "+With.DockerImage, nil, "", true)
 
 	// 重试5次
 	for tryCount := 0; tryCount < 5; tryCount++ {
@@ -28,6 +24,9 @@ func main() {
 		time.Sleep(3 * time.Second)
 		progress <- fmt.Sprintf("尝试第%d次推送\n", tryCount+1)
 	}
+	// 上传完后，删除本地镜像
+	removeImage()
+
 	// 等待退出
 	waitProgress()
 	fmt.Println("镜像上传出错了")
@@ -52,7 +51,14 @@ func loginDockerHub() {
 			time.Sleep(3 * time.Second)
 			progress <- fmt.Sprintf("尝试第%d次登陆\n", tryCount+1)
 		}
+		// 上传完后，删除本地镜像
+		removeImage()
 		fmt.Println("镜像仓库登陆失败。")
 		os.Exit(-1)
 	}
+}
+
+func removeImage() {
+	// 上传完后，删除本地镜像
+	exec.RunShellCommand("docker rmi "+With.DockerImage, nil, "", false)
 }
