@@ -95,6 +95,7 @@ func main() {
 		}
 	}
 
+	progress <- "镜像更新成功：" + With.DockerImage
 	// 等待退出
 	waitProgress()
 }

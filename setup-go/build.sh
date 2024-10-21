@@ -1,1 +1,1 @@
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ../dist/setup-go -ldflags="-w -s" .
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /home/nfs/fops/actions/farseers/FOPS-Actions/v1/setup-go -ldflags="-w -s" .
