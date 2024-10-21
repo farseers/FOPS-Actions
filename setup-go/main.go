@@ -2,20 +2,21 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/http"
-	"os"
-	"strings"
 )
 
 func main() {
 	go printProgress()
 	if With.GoVersion == "" {
-		fmt.Println("GoVersion默认使用：" + flog.Red("go1.22.0"))
-		With.GoVersion = "go1.22.0"
+		With.GoVersion = "go1.23.2"
+		fmt.Println("GoVersion默认使用：" + flog.Red(With.GoVersion))
 	}
 
 	if With.GoDownload == "" {

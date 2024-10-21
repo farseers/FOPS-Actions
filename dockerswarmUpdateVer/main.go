@@ -2,15 +2,16 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/farseer-go/fs/core"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/farseer-go/docker"
+	"github.com/farseer-go/fs/core"
 )
 
 func main() {
@@ -74,18 +75,20 @@ func main() {
 	}
 
 	// 更新到本地
-	swarmDevice := dockerSwarmDevice{}
+	dockerClient := docker.NewClient()
 	// 首次创建还是更新镜像
-	if swarmDevice.ExistsDocker(With.AppName) {
+	if exists, _ := dockerClient.Service.Exists(With.AppName); exists {
 		// 更新镜像
-		if !swarmDevice.SetImages(With.AppName, With.DockerImage, progress, context.Background()) {
+		if err := dockerClient.Service.SetImages(With.AppName, With.DockerImage); err != nil {
 			// 等待退出
 			waitProgress()
 			os.Exit(-1)
 		}
 	} else {
 		// 创建容器服务
-		if !swarmDevice.CreateService(With.AppName, With.DockerNodeRole, With.AdditionalScripts, With.DockerNetwork, With.DockerReplicas, With.DockerImage, progress, context.Background()) {
+		err := dockerClient.Service.Create(With.AppName, With.DockerNodeRole, With.AdditionalScripts, With.DockerNetwork, With.DockerReplicas, With.DockerImage, 0, "")
+		if err != nil {
+			progress <- "创建服务时出错：" + err.Error()
 			// 等待退出
 			waitProgress()
 			os.Exit(-1)
