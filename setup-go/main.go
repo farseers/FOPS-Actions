@@ -36,9 +36,11 @@ func main() {
 		fmt.Printf("当前go环境不正确：%s\n", ver)
 		fmt.Println(flog.Yellow("移除旧目录/usr/local/go"))
 		file.Delete("/usr/local/go")
+	} else {
+		fmt.Print("go程序未安装，将")
 	}
 
-	fmt.Println("开始下载go安装程序:" + With.GoDownload)
+	fmt.Println("开始下载go安装程序到:" + With.GoDownload)
 	savePath := "/home/"
 	fileName := collections.NewList(strings.Split(With.GoDownload, "/")...).Last()
 
