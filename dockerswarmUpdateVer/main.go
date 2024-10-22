@@ -76,6 +76,7 @@ func main() {
 
 	// 更新到本地
 	dockerClient := docker.NewClient()
+	dockerClient.SetChar(progress)
 	// 首次创建还是更新镜像
 	if exists, _ := dockerClient.Service.Exists(With.AppName); exists {
 		// 更新镜像
