@@ -3,16 +3,18 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/farseer-go/fs/async"
-	"github.com/farseer-go/utils/exec"
-	"github.com/farseer-go/utils/file"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/farseer-go/fs/async"
+	"github.com/farseer-go/utils/exec"
+	"github.com/farseer-go/utils/file"
 )
 
 func main() {
 	go printProgress()
+	exec.RunShell("git config --global http.timeout 10", progress, nil, "", true)
 	//setupGit()
 
 	// git操作驱动
