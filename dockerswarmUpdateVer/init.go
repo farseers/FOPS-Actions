@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/farseer-go/utils/file"
 	"os"
+
+	"github.com/farseer-go/utils/file"
 )
 
 var (
@@ -25,6 +26,7 @@ type WithAvg struct {
 	BuildId           int64  `json:"buildId"`                 // 构建主键
 	BuildNumber       int    `json:"buildNumber"`             // 构建版本号
 	FopsAddr          string `json:"fopsAddr"`                // 集群地址
+	IsLocal           bool   `json:"isLocal"`                 // 集群是本否为本地
 	FScheduleAddr     string `json:"fScheduleAddr"`           // 调度中心地址
 	AppAbsolutePath   string `json:"appAbsolutePath"`         // 应用的git根目录
 	DockerImage       string `json:"dockerImage"`             // Docker镜像
@@ -43,8 +45,7 @@ type WithAvg struct {
 	GitUserPwd  string `json:"gitUserPwd"`  // 账户密码
 	GitPath     string `json:"gitPath"`     // 存储目录
 
-	Proxy           string `json:"proxy"`           // Git代理
-	RemoteClusterId int64  `json:"remoteClusterId"` // 远程集群ID
+	Proxy string `json:"proxy"` // Git代理
 }
 
 func init() {

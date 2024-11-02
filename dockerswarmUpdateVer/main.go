@@ -18,13 +18,13 @@ func main() {
 	go printProgress()
 
 	// 更新到远程
-	if With.RemoteClusterId > 0 {
+	if !With.IsLocal {
 		if !strings.HasSuffix(With.FopsAddr, "/") {
 			With.FopsAddr += "/"
 		}
 		fopsAddr := With.FopsAddr + "apps/updateDockerImage"
 
-		bodyByte, _ := json.Marshal(map[string]any{"appName": With.AppName, "dockerImage": With.DockerImage, "buildNumber": With.BuildNumber, "clusterId": With.RemoteClusterId, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd})
+		bodyByte, _ := json.Marshal(map[string]any{"appName": With.AppName, "dockerImage": With.DockerImage, "buildNumber": With.BuildNumber, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd})
 		progress <- "开始更新远程fops：" + fopsAddr + " " + string(bodyByte)
 
 		isSuccess := false
