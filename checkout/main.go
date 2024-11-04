@@ -14,7 +14,6 @@ import (
 
 func main() {
 	go printProgress()
-	exec.RunShell("git config --global http.timeout 10", progress, nil, "", true)
 	//setupGit()
 
 	// git操作驱动

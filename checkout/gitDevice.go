@@ -3,12 +3,13 @@ package main
 import (
 	"bytes"
 	"context"
+	"path/filepath"
+	"sync"
+
 	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/str"
 	"github.com/timandy/routine"
-	"path/filepath"
-	"sync"
 )
 
 type gitDevice struct {
@@ -93,7 +94,7 @@ func (device *gitDevice) CloneOrPullAndDependent(lstGit []GitEO, progress chan s
 }
 
 func (device *gitDevice) pull(savePath string, progress chan string, ctx context.Context) bool {
-	exitCode := exec.RunShellContext(ctx, "git -C "+savePath+" pull --rebase", progress, nil, "", true)
+	exitCode := exec.RunShellContext(ctx, "timeout 10 git -C "+savePath+" pull --rebase", progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "Git拉取失败"
 		return false
@@ -103,7 +104,7 @@ func (device *gitDevice) pull(savePath string, progress chan string, ctx context
 
 func (device *gitDevice) clone(gitPath string, github string, branch string, progress chan string, ctx context.Context) bool {
 	bf := bytes.Buffer{}
-	bf.WriteString("git clone --depth=1")
+	bf.WriteString("timeout 20 git clone --depth=1")
 	if branch != "" {
 		bf.WriteString(" -b " + branch)
 	}
