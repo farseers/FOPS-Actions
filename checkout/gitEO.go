@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/farseer-go/fs/exception"
-	"github.com/farseer-go/utils/str"
 	"net/url"
 	"path/filepath"
 	"strings"
+
+	"github.com/farseer-go/fs/exception"
+	"github.com/farseer-go/utils/str"
 )
 
 // GitEO git仓库
@@ -15,6 +16,7 @@ type GitEO struct {
 	UserName string // 账户名称
 	UserPwd  string // 账户密码
 	Path     string // 存储目录
+	IsApp    bool   // 是否为应用
 }
 
 // GetAbsolutePath 获取git存储的绝对路径 如："/var/lib/fops/git/fops/"

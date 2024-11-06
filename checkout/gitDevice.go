@@ -65,7 +65,16 @@ func (device *gitDevice) CloneOrPull(git GitEO, progress chan string, ctx contex
 
 	// 存在则使用pull
 	if device.ExistsGitProject(gitPath) {
-		execSuccess = device.pull(gitPath, progress, ctx)
+		// 只有主应用，才需要切换分支
+		// if git.IsApp {
+		// 	if !device.remoteUpdate(gitPath, progress, ctx) {
+		// 		return false
+		// 	}
+		// 	if !device.checkout(gitPath, git.Branch, progress, ctx) {
+		// 		return false
+		// 	}
+		// }
+		execSuccess = device.pull(gitPath, git.Branch, progress, ctx)
 	} else {
 		execSuccess = device.clone(gitPath, git.GetAuthHub(), git.Branch, progress, ctx)
 	}
@@ -93,8 +102,8 @@ func (device *gitDevice) CloneOrPullAndDependent(lstGit []GitEO, progress chan s
 	return result
 }
 
-func (device *gitDevice) pull(savePath string, progress chan string, ctx context.Context) bool {
-	exitCode := exec.RunShellContext(ctx, "timeout 10 git -C "+savePath+" pull --rebase", progress, nil, "", true)
+func (device *gitDevice) pull(savePath string, branch string, progress chan string, ctx context.Context) bool {
+	exitCode := exec.RunShellContext(ctx, "timeout 10 git -C "+savePath+" pull origin "+branch+":"+branch+" --rebase", progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "Git拉取失败"
 		return false
@@ -116,6 +125,26 @@ func (device *gitDevice) clone(gitPath string, github string, branch string, pro
 	exitCode := exec.RunShellContext(ctx, bf.String(), progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "Git克隆失败"
+		return false
+	}
+	return true
+}
+
+// 切换到指定分支
+func (device *gitDevice) checkout(savePath string, branch string, progress chan string, ctx context.Context) bool {
+	exitCode := exec.RunShellContext(ctx, "git -C "+savePath+" checkout -t origin/"+branch, progress, nil, "", true)
+	if exitCode != 0 {
+		progress <- "Git分支切换失败"
+		return false
+	}
+	return true
+}
+
+// 更新远程分支
+func (device *gitDevice) remoteUpdate(savePath string, progress chan string, ctx context.Context) bool {
+	exitCode := exec.RunShellContext(ctx, "timeout 10 git -C "+savePath+" remote update", progress, nil, "", true)
+	if exitCode != 0 {
+		progress <- "Git更新远程分支失败"
 		return false
 	}
 	return true
