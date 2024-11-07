@@ -28,7 +28,7 @@ func main() {
 		progress <- "开始更新远程fops：" + fopsAddr + " " + string(bodyByte)
 
 		isSuccess := false
-		// 尝试5次
+		// 尝试10次
 		for i := 0; i < 10; i++ {
 			newRequest, _ := http.NewRequest("POST", fopsAddr, bytes.NewReader(bodyByte))
 			newRequest.Header.Set("Content-Type", "application/json")
@@ -45,14 +45,14 @@ func main() {
 			rsp, err := client.Do(newRequest)
 			if err != nil {
 				progress <- "更新远程fops的仓库版本失败：" + err.Error()
-				time.Sleep(10 * time.Second)
+				time.Sleep(20 * time.Second)
 				continue
 			}
 
 			apiRsp := core.NewApiResponseByReader[any](rsp.Body)
 			if apiRsp.StatusCode != 200 {
 				progress <- fmt.Sprintf("更新远程fops的仓库版本失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
-				time.Sleep(10 * time.Second)
+				time.Sleep(20 * time.Second)
 				continue
 			}
 
