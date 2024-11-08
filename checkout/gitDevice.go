@@ -3,12 +3,9 @@ package main
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"path/filepath"
 	"sync"
 
-	"github.com/farseer-go/collections"
-	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/str"
@@ -66,36 +63,12 @@ func (device *gitDevice) CloneOrPull(git GitEO, progress chan string, ctx contex
 	gitPath := git.GetAbsolutePath()
 	var execSuccess bool
 
-	// 存在则使用pull
-	if device.ExistsGitProject(gitPath) {
-		// 只有主应用，才需要切换分支
-		if git.IsApp {
-			// 更新远程分支
-			if !device.remoteUpdate(gitPath, progress, ctx) {
-				return false
-			}
-			// 当分支名称不一样时，切换分支
-			curBranchName := device.getCurBranchName(gitPath, ctx)
-			progress <- "当前分支名称：" + parse.ToString(curBranchName)
-
-			if parse.ToInt(curBranchName) != With.BuildNumber {
-				progress <- "新建本地分支：" + parse.ToString(With.BuildNumber)
-				if !device.checkout(gitPath, git.Branch, progress, ctx) {
-					return false
-				}
-			}
-
-			// 自动合并分支
-			if git.AutoMerge != "" && git.AutoMerge != git.Branch {
-				progress <- "自动合并分支" + git.AutoMerge
-				if !device.merge(gitPath, git.AutoMerge, progress, ctx) {
-					return false
-				}
-			}
-		}
+	// 目录存在，且为非应用仓库时，使用git pull
+	if device.ExistsGitProject(gitPath) && !git.IsApp {
 		// git remote update
 		execSuccess = device.pull(gitPath, progress, ctx)
 	} else {
+		file.Delete(gitPath)
 		execSuccess = device.clone(gitPath, git.GetAuthHub(), git.Branch, progress, ctx)
 	}
 	return execSuccess
@@ -150,50 +123,3 @@ func (device *gitDevice) clone(gitPath string, github string, branch string, pro
 	}
 	return true
 }
-
-// 切换到指定分支
-func (device *gitDevice) checkout(savePath string, branch string, progress chan string, ctx context.Context) bool {
-	// git checkout -b dev origin/dev
-	exitCode := exec.RunShellContext(ctx, fmt.Sprintf("timeout 10 git -C %s remote update && git -C %s checkout -b %d origin/%s", savePath, savePath, With.BuildNumber, branch), progress, nil, "", true)
-	if exitCode != 0 {
-		progress <- "Git分支切换失败"
-		return false
-	}
-	return true
-
-	// exitCode := exec.RunShellContext(ctx, "git -C "+savePath+" checkout -t origin/"+branch, progress, nil, "", true)
-	// if exitCode != 0 {
-	// 	progress <- "Git分支切换失败"
-	// 	return false
-	// }
-	// return true
-}
-
-// 更新远程分支
-func (device *gitDevice) remoteUpdate(savePath string, progress chan string, ctx context.Context) bool {
-	exitCode := exec.RunShellContext(ctx, "timeout 10 git -C "+savePath+" remote update", progress, nil, "", true)
-	if exitCode != 0 {
-		progress <- "Git更新远程分支失败"
-		return false
-	}
-	return true
-}
-
-// git branch --show-current
-func (device *gitDevice) getCurBranchName(savePath string, ctx context.Context) string {
-	c := make(chan string, 100)
-	exec.RunShellContext(ctx, "git -C "+savePath+" branch --show-current", c, nil, "", false)
-	return collections.NewListFromChan(c).First()
-}
-
-// git merge dev
-func (device *gitDevice) merge(savePath string, branch string, progress chan string, ctx context.Context) bool {
-	exitCode := exec.RunShellContext(ctx, "git -C "+savePath+" checkout -b "+branch+" origin/"+branch+" && git -C "+savePath+" merge "+branch, progress, nil, "", false)
-	if exitCode != 0 {
-		progress <- "Git合并" + branch + "分支失败"
-		return false
-	}
-	return true
-}
-
-// git pull origin dev:1
