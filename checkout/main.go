@@ -21,17 +21,16 @@ func main() {
 	worker := async.New()
 	for index := 0; index < len(With.Gits); index++ {
 		gitEO := With.Gits[index]
-		worker.Add(func() {
-			//var logs []string
+		worker.AddGO(func() {
 			result := false
 			// 支持重试3次
-			for tryCount := 1; tryCount < 4; tryCount++ {
+			for tryCount := 1; tryCount < 3; tryCount++ {
 				// 克隆或更新
 				result = device.CloneOrPull(gitEO, progress, context.Background())
 				if result {
 					break
 				}
-				time.Sleep(time.Second)
+				time.Sleep(time.Second * 3)
 				progress <- fmt.Sprintf("尝试第%d次拉取\n", tryCount+1)
 			}
 

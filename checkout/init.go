@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/farseer-go/utils/file"
 	"os"
+
+	"github.com/farseer-go/utils/file"
 )
 
 var (
