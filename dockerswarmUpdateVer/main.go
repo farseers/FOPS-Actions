@@ -24,7 +24,7 @@ func main() {
 		}
 		fopsAddr := With.FopsAddr + "apps/updateDockerImage"
 
-		bodyByte, _ := json.Marshal(map[string]any{"appName": With.AppName, "dockerImage": With.DockerImage, "buildNumber": With.BuildNumber, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd})
+		bodyByte, _ := json.Marshal(map[string]any{"appName": With.AppName, "dockerImage": With.DockerImage, "updateDelay": With.UpdateDelay, "buildNumber": With.BuildNumber, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd})
 		progress <- "开始更新远程fops：" + fopsAddr + " " + string(bodyByte)
 
 		isSuccess := false
@@ -80,14 +80,14 @@ func main() {
 	// 首次创建还是更新镜像
 	if exists, _ := dockerClient.Service.Exists(With.AppName); exists {
 		// 更新镜像
-		if err := dockerClient.Service.SetImages(With.AppName, With.DockerImage); err != nil {
+		if err := dockerClient.Service.SetImages(With.AppName, With.DockerImage, With.UpdateDelay); err != nil {
 			// 等待退出
 			waitProgress()
 			os.Exit(-1)
 		}
 	} else {
 		// 创建容器服务
-		err := dockerClient.Service.Create(With.AppName, With.DockerNodeRole, With.AdditionalScripts, With.DockerNetwork, With.DockerReplicas, With.DockerImage, 0, "")
+		err := dockerClient.Service.Create(With.AppName, With.DockerNodeRole, With.AdditionalScripts, With.DockerNetwork, With.DockerReplicas, With.DockerImage, With.LimitCpus, With.LimitMemory)
 		if err != nil {
 			progress <- "创建服务时出错：" + err.Error()
 			// 等待退出

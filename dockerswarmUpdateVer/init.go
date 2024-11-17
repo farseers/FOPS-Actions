@@ -22,22 +22,25 @@ var (
 )
 
 type WithAvg struct {
-	AppName           string `json:"appName"`                 // 应用名称（链路追踪）
-	BuildId           int64  `json:"buildId"`                 // 构建主键
-	BuildNumber       int    `json:"buildNumber"`             // 构建版本号
-	FopsAddr          string `json:"fopsAddr"`                // 集群地址
-	IsLocal           bool   `json:"isLocal"`                 // 集群是本否为本地
-	FScheduleAddr     string `json:"fScheduleAddr"`           // 调度中心地址
-	AppAbsolutePath   string `json:"appAbsolutePath"`         // 应用的git根目录
-	DockerImage       string `json:"dockerImage"`             // Docker镜像
-	DockerfilePath    string `json:"dockerfilePath"`          // Dockerfile路径
-	DockerHub         string `json:"dockerHub"`               // 托管地址
-	DockerUserName    string `json:"dockerUserName"`          // 账户名称
-	DockerUserPwd     string `json:"dockerUserPwd"`           // 账户密码
-	DockerNodeRole    string `json:"dockerNodeRole"`          // 容器节点角色 manager or worker
-	DockerNetwork     string `json:"dockerNetwork"`           // Docker网络
-	DockerReplicas    int    `json:"dockerReplicas"`          // 副本数量
-	AdditionalScripts string `json:"dockerAdditionalScripts"` // 首次创建应用时附加脚本
+	AppName           string  `json:"appName"`                 // 应用名称（链路追踪）
+	BuildId           int64   `json:"buildId"`                 // 构建主键
+	BuildNumber       int     `json:"buildNumber"`             // 构建版本号
+	FopsAddr          string  `json:"fopsAddr"`                // 集群地址
+	IsLocal           bool    `json:"isLocal"`                 // 集群是本否为本地
+	FScheduleAddr     string  `json:"fScheduleAddr"`           // 调度中心地址
+	AppAbsolutePath   string  `json:"appAbsolutePath"`         // 应用的git根目录
+	DockerImage       string  `json:"dockerImage"`             // Docker镜像
+	DockerfilePath    string  `json:"dockerfilePath"`          // Dockerfile路径
+	DockerHub         string  `json:"dockerHub"`               // 托管地址
+	DockerUserName    string  `json:"dockerUserName"`          // 账户名称
+	DockerUserPwd     string  `json:"dockerUserPwd"`           // 账户密码
+	DockerNodeRole    string  `json:"dockerNodeRole"`          // 容器节点角色 manager or worker
+	DockerNetwork     string  `json:"dockerNetwork"`           // Docker网络
+	DockerReplicas    int     `json:"dockerReplicas"`          // 副本数量
+	UpdateDelay       int     `json:"updateDelay"`             // 滚动更新的时间间隔
+	AdditionalScripts string  `json:"dockerAdditionalScripts"` // 首次创建应用时附加脚本
+	LimitCpus         float64 `json:"limitCpus"`               // cpu核数限制
+	LimitMemory       string  `json:"limitMemory"`             // 内存限制
 
 	GitHub      string `json:"gitHub"`      // git地址
 	GitBranch   string `json:"gitBranch"`   // Git分支
