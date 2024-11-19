@@ -2,7 +2,7 @@ module dockerswarmUpdateVer
 
 go 1.21
 
-toolchain go1.23.2
+toolchain go1.23.3
 
 require (
 	github.com/farseer-go/collections v0.15.0 // indirect

@@ -15,7 +15,7 @@ import (
 func main() {
 	go printProgress()
 	if With.GoVersion == "" {
-		With.GoVersion = "go1.23.2"
+		With.GoVersion = "go1.23.3"
 		fmt.Println("GoVersion默认使用：" + flog.Red(With.GoVersion))
 	}
 
