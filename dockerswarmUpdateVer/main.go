@@ -3,13 +3,14 @@ package main
 import (
 	"bytes"
 	"crypto/tls"
-	"encoding/json"
+
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/core"
 )
@@ -24,7 +25,7 @@ func main() {
 		}
 		fopsAddr := With.FopsAddr + "apps/updateDockerImage"
 
-		bodyByte, _ := json.Marshal(map[string]any{"appName": With.AppName, "dockerImage": With.DockerImage, "updateDelay": With.UpdateDelay, "buildNumber": With.BuildNumber, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd})
+		bodyByte, _ := sonic.Marshal(map[string]any{"appName": With.AppName, "dockerImage": With.DockerImage, "updateDelay": With.UpdateDelay, "buildNumber": With.BuildNumber, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd})
 		progress <- "开始更新远程fops：" + fopsAddr + " " + string(bodyByte)
 
 		isSuccess := false
@@ -104,7 +105,7 @@ func main() {
 // 更新失败时，获取docker日志
 func getDockerLog() {
 	fopsAddr := With.FopsAddr + "apps/logs/dockerSwarm"
-	bodyByte, _ := json.Marshal(map[string]any{"appName": With.AppName, "tail": 50})
+	bodyByte, _ := sonic.Marshal(map[string]any{"appName": With.AppName, "tail": 50})
 	newRequest, _ := http.NewRequest("POST", fopsAddr, bytes.NewReader(bodyByte))
 	newRequest.Header.Set("Content-Type", "application/json")
 
