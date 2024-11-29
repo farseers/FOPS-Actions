@@ -38,6 +38,7 @@ func main() {
 				fmt.Println("拉取出错了")
 				os.Exit(-1)
 			}
+
 			dest := filepath.Join(DistRoot, gitEO.GetRelativePath())
 			progress <- "源文件" + gitEO.GetAbsolutePath() + " 复制到 " + dest
 			file.CopyFolder(gitEO.GetAbsolutePath(), dest)

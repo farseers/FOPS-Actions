@@ -70,6 +70,10 @@ func (device *gitDevice) CloneOrPull(git GitEO, progress chan string, ctx contex
 	} else {
 		file.Delete(gitPath)
 		execSuccess = device.clone(gitPath, git.GetAuthHub(), git.Branch, progress, ctx)
+		// 需要合并分支
+		// if execSuccess && git.AutoMerge != "" && git.IsApp {
+		// 	device.merge(gitPath, git.AutoMerge, progress, ctx)
+		// }
 	}
 	return execSuccess
 }
@@ -119,6 +123,15 @@ func (device *gitDevice) clone(gitPath string, github string, branch string, pro
 	exitCode := exec.RunShellContext(ctx, bf.String(), progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "Git克隆失败"
+		return false
+	}
+	return true
+}
+
+func (device *gitDevice) merge(gitPath string, branch string, progress chan string, ctx context.Context) bool {
+	exitCode := exec.RunShellContext(ctx, "timeout 20 git pull origin main && git merge "+branch+" && git push", progress, nil, gitPath, true)
+	if exitCode != 0 {
+		progress <- "合并分支失败"
 		return false
 	}
 	return true
