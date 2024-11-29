@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/bytedance/sonic"
+	"github.com/farseer-go/fs/snc"
 	"github.com/farseer-go/utils/file"
 )
 
@@ -62,5 +62,5 @@ func init() {
 	ActionsRoot = os.Getenv("actionsRoot")
 
 	withJsonContent := file.ReadString(WithJsonPath)
-	_ = sonic.Unmarshal([]byte(withJsonContent), &With)
+	_ = snc.Unmarshal([]byte(withJsonContent), &With)
 }
