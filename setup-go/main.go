@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/farseer-go/collections"
-	"github.com/farseer-go/fs/flog"
+	"github.com/farseer-go/fs/color"
 	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/http"
@@ -16,7 +16,7 @@ func main() {
 	go printProgress()
 	if With.GoVersion == "" {
 		With.GoVersion = "go1.23.3"
-		fmt.Println("GoVersion默认使用：" + flog.Red(With.GoVersion))
+		fmt.Println("GoVersion默认使用：" + color.Red(With.GoVersion))
 	}
 
 	if With.GoDownload == "" {
@@ -34,7 +34,7 @@ func main() {
 			return
 		}
 		fmt.Printf("当前go环境不正确：%s\n", ver)
-		fmt.Println(flog.Yellow("移除旧目录/usr/local/go"))
+		fmt.Println(color.Yellow("移除旧目录/usr/local/go"))
 		file.Delete("/usr/local/go")
 	} else {
 		fmt.Print("go程序未安装，将")
@@ -46,7 +46,7 @@ func main() {
 
 	// 下载
 	if _, err := http.Download(With.GoDownload, savePath+fileName, nil, 0, With.Proxy); err != nil {
-		fmt.Println(flog.Red(err.Error()))
+		fmt.Println(color.Red(err.Error()))
 		os.Exit(-1)
 	}
 

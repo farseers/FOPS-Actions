@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/farseer-go/fs/flog"
-	"github.com/farseer-go/utils/exec"
 	"os"
+
+	"github.com/farseer-go/fs/color"
+	"github.com/farseer-go/utils/exec"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func main() {
 	//setupGit()
 
 	if With.Proxy == "" {
-		fmt.Println(flog.Red("未设置proxy"))
+		fmt.Println(color.Red("未设置proxy"))
 		os.Exit(-1)
 	}
 

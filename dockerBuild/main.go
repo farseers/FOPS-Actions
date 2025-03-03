@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/farseer-go/fs/flog"
-	"github.com/farseer-go/utils/exec"
-	"github.com/farseer-go/utils/file"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/farseer-go/fs/color"
+	"github.com/farseer-go/utils/exec"
+	"github.com/farseer-go/utils/file"
 )
 
 func main() {
@@ -55,7 +56,7 @@ func CreateDockerfile() {
 
 	dockerfileContent := file.ReadString(With.AppAbsolutePath + With.DockerfilePath)
 	if dockerfileContent == "" {
-		fmt.Println(flog.Red("Dockerfile没有定义"))
+		fmt.Println(color.Red("Dockerfile没有定义"))
 		os.Exit(-1)
 	}
 
