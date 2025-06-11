@@ -70,10 +70,10 @@ func (device *gitDevice) CloneOrPull(git GitEO, progress chan string, ctx contex
 	} else {
 		file.Delete(gitPath)
 		execSuccess = device.clone(gitPath, git.GetAuthHub(), git.Branch, progress, ctx)
-		// 需要合并分支
-		// if execSuccess && git.AutoMerge != "" && git.IsApp {
-		// 	device.merge(gitPath, git.AutoMerge, progress, ctx)
-		// }
+		// 如果是应用仓库，则克隆后需要打印当前的CommitId
+		if git.IsApp && execSuccess {
+
+		}
 	}
 	return execSuccess
 }
