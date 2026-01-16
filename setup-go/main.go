@@ -15,13 +15,13 @@ import (
 func main() {
 	go printProgress()
 	if With.GoVersion == "" {
-		With.GoVersion = "go1.23.3"
+		With.GoVersion = "go1.25.6"
 		fmt.Println("GoVersion默认使用：" + color.Red(With.GoVersion))
 	}
 
 	if With.GoDownload == "" {
-		//With.GoDownload = "https://go.dev/dl/" + With.GoVersion + ".linux-amd64.tar.gz"
-		With.GoDownload = "https://studygolang.com/dl/golang/" + With.GoVersion + ".linux-amd64.tar.gz"
+		With.GoDownload = "https://go.dev/dl/" + With.GoVersion + ".linux-amd64.tar.gz"
+		//With.GoDownload = "https://studygolang.com/dl/golang/" + With.GoVersion + ".linux-amd64.tar.gz"
 	}
 
 	fmt.Printf("go环境要求为：%s\n", With.GoVersion)
