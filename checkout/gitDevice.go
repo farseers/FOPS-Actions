@@ -31,8 +31,9 @@ func (device *gitDevice) GetName(gitHub string) string {
 	return str.CutRight(git, ".git")
 }
 
-func (device *gitDevice) RememberPassword(progress chan string) {
-	exec.RunShell("git config --global credential.helper store", progress, nil, "", true)
+func (device *gitDevice) RememberPassword() {
+	result, wait := exec.RunShell("git config --global credential.helper store", nil, "", true)
+	exec.SaveToChan(progress, result, wait)
 }
 
 func (device *gitDevice) ExistsGitProject(gitPath string) bool {
@@ -43,18 +44,18 @@ func (device *gitDevice) ExistsGitProject(gitPath string) bool {
 	return file.IsExists(gitPath)
 }
 
-func (device *gitDevice) Clear(git GitEO, progress chan string) bool {
+func (device *gitDevice) Clear(git GitEO) bool {
 	// 获取Git存放的路径
 	gitPath := git.GetAbsolutePath()
-	exitCode := exec.RunShell("rm -rf "+gitPath, progress, nil, "", true)
-	if exitCode != 0 {
+	result, wait := exec.RunShell("rm -rf "+gitPath, nil, "", true)
+	if exitCode := exec.SaveToChan(progress, result, wait); exitCode != 0 {
 		progress <- "Git清除失败"
 		return false
 	}
 	return true
 }
 
-func (device *gitDevice) CloneOrPull(git GitEO, progress chan string, ctx context.Context) bool {
+func (device *gitDevice) CloneOrPull(git GitEO, ctx context.Context) bool {
 	if progress == nil {
 		progress = make(chan string, 100)
 	}
@@ -66,10 +67,10 @@ func (device *gitDevice) CloneOrPull(git GitEO, progress chan string, ctx contex
 	// 目录存在，且为非应用仓库时，使用git pull
 	if device.ExistsGitProject(gitPath) && !git.IsApp {
 		// git remote update
-		execSuccess = device.pull(gitPath, progress, ctx)
+		execSuccess = device.pull(gitPath, ctx)
 	} else {
 		file.Delete(gitPath)
-		execSuccess = device.clone(gitPath, git.GetAuthHub(), git.Branch, progress, ctx)
+		execSuccess = device.clone(gitPath, git.GetAuthHub(), git.Branch, ctx)
 		// 如果是应用仓库，则克隆后需要打印当前的CommitId
 		if git.IsApp && execSuccess {
 
@@ -78,7 +79,7 @@ func (device *gitDevice) CloneOrPull(git GitEO, progress chan string, ctx contex
 	return execSuccess
 }
 
-func (device *gitDevice) CloneOrPullAndDependent(lstGit []GitEO, progress chan string, ctx context.Context) bool {
+func (device *gitDevice) CloneOrPullAndDependent(lstGit []GitEO, ctx context.Context) bool {
 	progress <- "开始拉取git代码"
 	var sw sync.WaitGroup
 	result := true
@@ -87,7 +88,7 @@ func (device *gitDevice) CloneOrPullAndDependent(lstGit []GitEO, progress chan s
 		g := git
 		routine.Go(func() {
 			defer sw.Done()
-			if !device.CloneOrPull(g, progress, ctx) {
+			if !device.CloneOrPull(g, ctx) {
 				result = false
 			}
 		})
@@ -99,17 +100,17 @@ func (device *gitDevice) CloneOrPullAndDependent(lstGit []GitEO, progress chan s
 	return result
 }
 
-func (device *gitDevice) pull(savePath string, progress chan string, ctx context.Context) bool {
+func (device *gitDevice) pull(savePath string, ctx context.Context) bool {
 	//exitCode := exec.RunShellContext(ctx, "timeout 10 git -C "+savePath+" pull origin "+branch+":"+branch+" --rebase", progress, nil, "", true)
-	exitCode := exec.RunShellContext(ctx, "timeout 10 git -C "+savePath+" pull --rebase", progress, nil, "", true)
-	if exitCode != 0 {
+	result, wait := exec.RunShellContext(ctx, "timeout 10 git -C "+savePath+" pull --rebase", nil, "", true)
+	if exitCode := exec.SaveToChan(progress, result, wait); exitCode != 0 {
 		progress <- "Git拉取失败"
 		return false
 	}
 	return true
 }
 
-func (device *gitDevice) clone(gitPath string, github string, branch string, progress chan string, ctx context.Context) bool {
+func (device *gitDevice) clone(gitPath string, github string, branch string, ctx context.Context) bool {
 	bf := bytes.Buffer{}
 	bf.WriteString("timeout 20 git clone --depth=1")
 	if branch != "" {
@@ -120,17 +121,17 @@ func (device *gitDevice) clone(gitPath string, github string, branch string, pro
 	bf.WriteString(" ")
 	bf.WriteString(gitPath)
 
-	exitCode := exec.RunShellContext(ctx, bf.String(), progress, nil, "", true)
-	if exitCode != 0 {
+	result, wait := exec.RunShellContext(ctx, bf.String(), nil, "", true)
+	if exitCode := exec.SaveToChan(progress, result, wait); exitCode != 0 {
 		progress <- "Git克隆失败"
 		return false
 	}
 	return true
 }
 
-func (device *gitDevice) merge(gitPath string, branch string, progress chan string, ctx context.Context) bool {
-	exitCode := exec.RunShellContext(ctx, "timeout 20 git pull origin main && git merge "+branch+" && git push", progress, nil, gitPath, true)
-	if exitCode != 0 {
+func (device *gitDevice) merge(gitPath string, branch string, ctx context.Context) bool {
+	result, wait := exec.RunShellContext(ctx, "timeout 20 git pull origin main && git merge "+branch+" && git push", nil, gitPath, true)
+	if exitCode := exec.SaveToChan(progress, result, wait); exitCode != 0 {
 		progress <- "合并分支失败"
 		return false
 	}

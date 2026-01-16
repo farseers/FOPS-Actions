@@ -15,13 +15,14 @@ func main() {
 
 // 安装npm
 func setupNpm() {
-	_, output := exec.RunShellCommand("which npm", nil, "", false)
-	for _, o := range output {
+	output, _ := exec.RunShellCommand("which npm", nil, "", false)
+	for _, o := range output.ToArray() {
 		if o == "/usr/bin/npm" {
 			return
 		}
 	}
 
 	// 没有安装git
-	exec.RunShell("apk add nodejs npm", progress, nil, "", true)
+	result, wait := exec.RunShell("apk add nodejs npm", nil, "", true)
+	exec.SaveToChan(progress, result, wait)
 }

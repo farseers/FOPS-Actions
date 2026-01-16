@@ -26,7 +26,7 @@ func main() {
 			// 支持重试3次
 			for tryCount := 1; tryCount < 3; tryCount++ {
 				// 克隆或更新
-				result = device.CloneOrPull(gitEO, progress, context.Background())
+				result = device.CloneOrPull(gitEO, context.Background())
 				if result {
 					break
 				}
@@ -52,13 +52,14 @@ func main() {
 
 // 安装git
 func setupGit() {
-	_, output := exec.RunShellCommand("which git", nil, "", false)
-	for _, o := range output {
+	output, _ := exec.RunShellCommand("which git", nil, "", false)
+	for _, o := range output.ToArray() {
 		if o == "/usr/bin/git" {
 			return
 		}
 	}
 
 	// 没有安装git
-	exec.RunShell("apk add git", progress, nil, "", true)
+	result, wait := exec.RunShell("apk add git", nil, "", true)
+	exec.SaveToChan(progress, result, wait)
 }

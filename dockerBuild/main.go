@@ -26,8 +26,8 @@ func main() {
 	cmd += " " + DistRoot
 	// 重试5次
 	for tryCount := 0; tryCount < 5; tryCount++ {
-		var result = exec.RunShell(cmd, progress, nil, DistRoot, true)
-		if result == 0 {
+		result, wait := exec.RunShell(cmd, nil, DistRoot, true)
+		if exitCode := exec.SaveToChan(progress, result, wait); exitCode == 0 {
 			progress <- "镜像打包完成。"
 			waitProgress()
 			return

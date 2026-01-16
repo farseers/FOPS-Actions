@@ -45,7 +45,7 @@ type WithAvg struct {
 	GitPath     string `json:"gitPath"`     // 存储目录
 
 	Proxy     string `json:"proxy"`     // Git代理
-	ClusterId string `json:"clusterId"` // 集群ID
+	ClusterId int    `json:"clusterId"` // 集群ID
 }
 
 func init() {
@@ -62,5 +62,7 @@ func init() {
 	ActionsRoot = os.Getenv("actionsRoot")
 
 	withJsonContent := file.ReadString(WithJsonPath)
+	//fmt.Println(withJsonContent)
 	_ = snc.Unmarshal([]byte(withJsonContent), &With)
+	//fmt.Println(With.DockerImage)
 }

@@ -52,7 +52,7 @@ func main() {
 
 	fmt.Println("下载完成，准备解压到：/usr/local/go")
 	// tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
-	if result, _ := exec.RunShellCommand("tar -C /usr/local -xzf "+fileName+"&& rm -rf ./"+fileName, nil, savePath, true); result == 0 {
+	if _, result := exec.RunShellCommand("tar -C /usr/local -xzf "+fileName+"&& rm -rf ./"+fileName, nil, savePath, true); result == 0 {
 		fmt.Println("解压完成。")
 		exportEnv()
 	}
@@ -64,8 +64,7 @@ func main() {
 }
 
 func getGoVersion() string {
-	_, receiveOutput := exec.RunShellCommand("/usr/local/go/bin/go version", nil, "", false)
-	listFromChan := collections.NewList(receiveOutput...)
+	listFromChan, _ := exec.RunShellCommand("/usr/local/go/bin/go version", nil, "", false)
 	fmt.Println(listFromChan.Last())
 	vers := strings.Split(listFromChan.Last(), " ")
 	var ver string

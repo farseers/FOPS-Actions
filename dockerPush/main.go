@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/farseer-go/utils/exec"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/farseer-go/utils/exec"
 )
 
 func main() {
@@ -15,8 +16,8 @@ func main() {
 	// 重试5次
 	for tryCount := 0; tryCount < 5; tryCount++ {
 		// 上传
-		var result = exec.RunShell("docker push "+With.DockerImage, progress, nil, "", true)
-		if result == 0 {
+		result, wait := exec.RunShell("docker push "+With.DockerImage, nil, "", true)
+		if exitCode := exec.SaveToChan(progress, result, wait); exitCode == 0 {
 			progress <- "镜像上传完成。"
 			waitProgress()
 			return
@@ -43,8 +44,8 @@ func loginDockerHub() {
 
 		// 重试5次
 		for tryCount := 0; tryCount < 5; tryCount++ {
-			result := exec.RunShell("docker login "+dockerHub+" -u "+With.DockerUserName+" -p "+With.DockerUserPwd, progress, nil, "", true)
-			if result == 0 {
+			result, wait := exec.RunShell("docker login "+dockerHub+" -u "+With.DockerUserName+" -p "+With.DockerUserPwd, nil, "", true)
+			if exitCode := exec.SaveToChan(progress, result, wait); exitCode == 0 {
 				progress <- "镜像仓库登陆成功。"
 				return
 			}

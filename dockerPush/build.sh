@@ -1,1 +1,0 @@
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /home/nfs/fops/actions/farseers/FOPS-Actions/v1/dockerPush -ldflags="-w -s" .

@@ -13,6 +13,7 @@ import (
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/fs/snc"
+	"github.com/farseer-go/utils/exec"
 )
 
 func main() {
@@ -77,20 +78,20 @@ func main() {
 
 	// 更新到本地
 	dockerClient := docker.NewClient()
-	dockerClient.SetChar(progress)
 	// 首次创建还是更新镜像
-	if exists, _ := dockerClient.Service.Exists(With.AppName); exists {
+	if exists := dockerClient.Service.Exists(With.AppName); exists {
 		// 更新镜像
-		if err := dockerClient.Service.SetImages(With.AppName, With.DockerImage, With.UpdateDelay); err != nil {
+		result, wait := dockerClient.Service.SetImages(With.AppName, With.DockerImage, With.UpdateDelay)
+		if exitCode := exec.SaveToChan(progress, result, wait); exitCode != 0 {
 			// 等待退出
 			waitProgress()
 			os.Exit(-1)
 		}
 	} else {
 		// 创建容器服务
-		err := dockerClient.Service.Create(With.AppName, With.DockerNodeRole, With.AdditionalScripts, With.DockerNetwork, With.DockerReplicas, With.DockerImage, With.LimitCpus, With.LimitMemory)
-		if err != nil {
-			progress <- "创建服务时出错：" + err.Error()
+		result, wait := dockerClient.Service.Create(With.AppName, With.DockerNodeRole, With.AdditionalScripts, With.DockerNetwork, With.DockerReplicas, With.DockerImage, With.LimitCpus, With.LimitMemory)
+		if exitCode := exec.SaveToChan(progress, result, wait); exitCode != 0 {
+			progress <- "创建服务时出错"
 			// 等待退出
 			waitProgress()
 			os.Exit(-1)
