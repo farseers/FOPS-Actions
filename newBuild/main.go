@@ -1,17 +1,14 @@
 package main
 
 import (
-	"bytes"
-	"crypto/tls"
-
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/fs/snc"
+	"github.com/farseer-go/utils/http"
 )
 
 func main() {
@@ -29,28 +26,17 @@ func main() {
 	isSuccess := false
 	// 尝试10次
 	for i := 0; i < 10; i++ {
-		newRequest, _ := http.NewRequest("POST", fopsAddr, bytes.NewReader(bodyByte))
-		newRequest.Header.Set("Content-Type", "application/json")
-
-		// 读取配置
-		client := &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true, // 不验证 HTTPS 证书
-				},
-			},
-		}
 		progress <- fmt.Sprintf("尝试第%d次更新", i+1)
-		rsp, err := client.Do(newRequest)
+		// 读取配置
+		apiRsp, statusCode, err := http.PostJson[core.ApiResponse[any]](fopsAddr, nil, bodyByte, 0)
 		if err != nil {
 			progress <- "创建新的构建失败：" + err.Error()
 			time.Sleep(20 * time.Second)
 			continue
 		}
 
-		apiRsp := core.NewApiResponseByReader[any](rsp.Body)
 		if apiRsp.StatusCode != 200 {
-			progress <- fmt.Sprintf("创建新的构建失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
+			progress <- fmt.Sprintf("创建新的构建失败（%v）：%s", statusCode, apiRsp.StatusMessage)
 			time.Sleep(20 * time.Second)
 			continue
 		}

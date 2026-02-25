@@ -1,11 +1,7 @@
 package main
 
 import (
-	"bytes"
-	"crypto/tls"
-
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -14,7 +10,18 @@ import (
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/fs/snc"
 	"github.com/farseer-go/utils/exec"
+	"github.com/farseer-go/utils/http"
 )
+
+// 定义一个全局复用的 Client（只需要初始化一次）
+// var httpClient = &http.Client{
+// 	Timeout: 10 * time.Second, // 必须设置总超时
+// 	Transport: &http.Transport{
+// 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // 不验证 HTTPS 证书
+// 		MaxIdleConns:    100,
+// 		IdleConnTimeout: 90 * time.Second,
+// 	},
+// }
 
 func main() {
 	go printProgress()
@@ -32,28 +39,16 @@ func main() {
 		isSuccess := false
 		// 尝试10次
 		for i := 0; i < 10; i++ {
-			newRequest, _ := http.NewRequest("POST", fopsAddr, bytes.NewReader(bodyByte))
-			newRequest.Header.Set("Content-Type", "application/json")
-
-			// 读取配置
-			client := &http.Client{
-				Transport: &http.Transport{
-					TLSClientConfig: &tls.Config{
-						InsecureSkipVerify: true, // 不验证 HTTPS 证书
-					},
-				},
-			}
 			progress <- fmt.Sprintf("尝试第%d次更新", i+1)
-			rsp, err := client.Do(newRequest)
+			// 读取配置
+			apiRsp, statusCode, err := http.PostJson[core.ApiResponse[any]](fopsAddr, nil, bodyByte, 0)
 			if err != nil {
 				progress <- "更新远程fops的仓库版本失败：" + err.Error()
 				time.Sleep(20 * time.Second)
 				continue
 			}
-
-			apiRsp := core.NewApiResponseByReader[any](rsp.Body)
 			if apiRsp.StatusCode != 200 {
-				progress <- fmt.Sprintf("更新远程fops的仓库版本失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
+				progress <- fmt.Sprintf("更新远程fops的仓库版本失败（%v）：%s", statusCode, apiRsp.StatusMessage)
 				time.Sleep(20 * time.Second)
 				continue
 			}
@@ -107,26 +102,15 @@ func main() {
 func getDockerLog() {
 	fopsAddr := With.FopsAddr + "apps/logs/dockerSwarm"
 	bodyByte, _ := snc.Marshal(map[string]any{"appName": With.AppName, "tail": 50})
-	newRequest, _ := http.NewRequest("POST", fopsAddr, bytes.NewReader(bodyByte))
-	newRequest.Header.Set("Content-Type", "application/json")
 
 	// 读取配置
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true, // 不验证 HTTPS 证书
-			},
-		},
-	}
-	rsp, err := client.Do(newRequest)
+	apiRsp, statusCode, err := http.PostJson[core.ApiResponse[string]](fopsAddr, nil, bodyByte, 0)
 	if err != nil {
 		fmt.Println("查询Docker日志失败：" + err.Error())
 		return
 	}
-
-	apiRsp := core.NewApiResponseByReader[string](rsp.Body)
 	if apiRsp.StatusCode != 200 {
-		fmt.Printf("查询Docker日志失败（%v）：%s", rsp.StatusCode, apiRsp.StatusMessage)
+		fmt.Printf("查询Docker日志失败（%v）：%s", statusCode, apiRsp.StatusMessage)
 		return
 	}
 	fmt.Println(apiRsp.Data)
