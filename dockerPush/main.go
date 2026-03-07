@@ -16,8 +16,8 @@ func main() {
 	// 重试5次
 	for tryCount := 0; tryCount < 5; tryCount++ {
 		// 上传
-		result, wait := exec.RunShell("docker push "+With.DockerImage, nil, "", true)
-		if exitCode := exec.SaveToChan(progress, result, wait); exitCode == 0 {
+		wait := exec.RunShell("docker", []string{"push", With.DockerImage}, nil, "", true)
+		if exitCode := wait.WaitToChan(progress); exitCode == 0 {
 			progress <- "镜像上传完成。"
 			waitProgress()
 			return
@@ -44,8 +44,8 @@ func loginDockerHub() {
 
 		// 重试5次
 		for tryCount := 0; tryCount < 5; tryCount++ {
-			result, wait := exec.RunShell("docker login "+dockerHub+" -u "+With.DockerUserName+" -p "+With.DockerUserPwd, nil, "", true)
-			if exitCode := exec.SaveToChan(progress, result, wait); exitCode == 0 {
+			wait := exec.RunShell("docker", []string{"login", dockerHub, "-u", With.DockerUserName, "-p", With.DockerUserPwd}, nil, "", true)
+			if exitCode := wait.WaitToChan(progress); exitCode == 0 {
 				progress <- "镜像仓库登陆成功。"
 				return
 			}
@@ -61,5 +61,5 @@ func loginDockerHub() {
 
 func removeImage() {
 	// 上传完后，删除本地镜像
-	exec.RunShellCommand("docker rmi "+With.DockerImage, nil, "", false)
+	exec.RunShell("docker", []string{"rmi", With.DockerImage}, nil, "", false)
 }

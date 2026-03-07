@@ -20,8 +20,8 @@ func main() {
 
 	//cmd := fmt.Sprintf("git config --global git config --global https.proxy  %s && git config --global https.https://github.com.proxy %s", With.Proxy, With.Proxy)
 	cmd := fmt.Sprintf("git config --global https.proxy %s && git config --global http.proxy %s && git config --global https.sslVerify false && git config --global http.sslVerify false", With.Proxy, With.Proxy)
-	result, wait := exec.RunShell(cmd, nil, "", true)
-	exec.SaveToChan(progress, result, wait)
+	wait := exec.RunShell("bash", []string{"-c", cmd}, nil, "", true)
+	wait.WaitToChan(progress)
 
 	// 等待退出
 	waitProgress()
@@ -29,7 +29,8 @@ func main() {
 
 // 安装git
 func setupGit() {
-	output, _ := exec.RunShellCommand("which git", nil, "", false)
+	wait := exec.RunShell("which", []string{"git"}, nil, "", false)
+	output, _ := wait.WaitToList()
 	for _, o := range output.ToArray() {
 		if o == "/usr/bin/git" {
 			return
@@ -37,6 +38,6 @@ func setupGit() {
 	}
 
 	// 没有安装git
-	result, wait := exec.RunShell("apk add git", nil, "", true)
-	exec.SaveToChan(progress, result, wait)
+	wait = exec.RunShell("apk", []string{"add", "git"}, nil, "", true)
+	wait.WaitToChan(progress)
 }

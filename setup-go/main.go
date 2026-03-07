@@ -52,7 +52,7 @@ func main() {
 
 	fmt.Println("下载完成，准备解压到：/usr/local/go")
 	// tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
-	if _, result := exec.RunShellCommand("tar -C /usr/local -xzf "+fileName+"&& rm -rf ./"+fileName, nil, savePath, true); result == 0 {
+	if wait := exec.RunShell("bash", []string{"-c", fmt.Sprintf("tar -C /usr/local -xzf %s && rm -rf ./%s", fileName, fileName)}, nil, savePath, true); wait.Wait() == 0 {
 		fmt.Println("解压完成。")
 		exportEnv()
 	}
@@ -64,7 +64,8 @@ func main() {
 }
 
 func getGoVersion() string {
-	listFromChan, _ := exec.RunShellCommand("/usr/local/go/bin/go version", nil, "", false)
+	wait := exec.RunShell("/usr/local/go/bin/go", []string{"version"}, nil, "", false)
+	listFromChan, _ := wait.WaitToList()
 	fmt.Println(listFromChan.Last())
 	vers := strings.Split(listFromChan.Last(), " ")
 	var ver string
@@ -77,7 +78,13 @@ func getGoVersion() string {
 // 设置环境变量
 func exportEnv() {
 	// export PATH=$PATH:/usr/local/go/bin
-	exec.RunShellCommand("export PATH=$PATH:/usr/local/go/bin", nil, "", true)
-	exec.RunShellCommand("go env -w GO111MODULE=on", nil, "", true)
-	exec.RunShellCommand("go env -w GOPROXY=https://goproxy.cn,direct", nil, "", true)
+	wait := exec.RunShell("bash", []string{"-c", "echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile && source /etc/profile"}, nil, "", true)
+	wait.Wait()
+
+	wait = exec.RunShell("go", []string{"env", "-w", "GO111MODULE=on"}, nil, "", true)
+	wait.Wait()
+
+	wait = exec.RunShell("go", []string{"env", "-w", "GOPROXY=https://goproxy.cn,direct"}, nil, "", true)
+	wait.Wait()
+
 }

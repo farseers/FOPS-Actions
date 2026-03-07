@@ -15,7 +15,8 @@ func main() {
 
 // 安装npm
 func setupNpm() {
-	output, _ := exec.RunShellCommand("which npm", nil, "", false)
+	wait := exec.RunShell("which", []string{"npm"}, nil, "", false)
+	output, _ := wait.WaitToList()
 	for _, o := range output.ToArray() {
 		if o == "/usr/bin/npm" {
 			return
@@ -23,6 +24,6 @@ func setupNpm() {
 	}
 
 	// 没有安装git
-	result, wait := exec.RunShell("apk add nodejs npm", nil, "", true)
-	exec.SaveToChan(progress, result, wait)
+	wait = exec.RunShell("apk", []string{"add", "nodejs", "npm"}, nil, "", true)
+	wait.WaitToChan(progress)
 }
