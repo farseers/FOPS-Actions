@@ -8,8 +8,8 @@ import (
 
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/core"
+	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/snc"
-	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/http"
 )
 
@@ -76,16 +76,23 @@ func main() {
 	// 首次创建还是更新镜像
 	if exists := dockerClient.Service.Exists(With.AppName); exists {
 		// 更新镜像
-		result, wait := dockerClient.Service.SetImages(With.AppName, With.DockerImage, With.UpdateDelay)
-		if exitCode := exec.SaveToChan(progress, result, wait); exitCode != 0 {
+		wait := dockerClient.Service.SetImages(With.AppName, With.DockerImage, With.UpdateDelay)
+		if exitCode := wait.WaitToChan(progress); exitCode != 0 {
 			// 等待退出
 			waitProgress()
 			os.Exit(-1)
 		}
 	} else {
+		// 准备配置文件
+		lastVersion, err := dockerClient.Config.GetLastVersion(With.AppName)
+		exception.ThrowRefuseExceptionError(err)
+
 		// 创建容器服务
-		result, wait := dockerClient.Service.Create(With.AppName, With.DockerNodeRole, With.AdditionalScripts, With.DockerNetwork, With.DockerReplicas, With.DockerImage, With.LimitCpus, With.LimitMemory)
-		if exitCode := exec.SaveToChan(progress, result, wait); exitCode != 0 {
+		wait := dockerClient.Service.Create(With.AppName, With.DockerNodeRole, With.AdditionalScripts, With.DockerNetwork, With.DockerReplicas, With.DockerImage, With.LimitCpus, With.LimitMemory, docker.ConfigTarget{
+			Name:   lastVersion.Spec.Name,
+			Target: "/app/config.yaml",
+		})
+		if exitCode := wait.WaitToChan(progress); exitCode != 0 {
 			progress <- "创建服务时出错"
 			// 等待退出
 			waitProgress()
