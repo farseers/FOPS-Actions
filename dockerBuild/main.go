@@ -19,15 +19,24 @@ func main() {
 
 	// 打包
 	progress <- "开始镜像打包。"
-	cmd := fmt.Sprintf("docker build -t %s --network=host -f %s", With.DockerImage, DockerfilePath)
+
+	// 1. 初始化基础参数列表
+	args := []string{"build", "-t", With.DockerImage, "--network=host", "-f", DockerfilePath}
+	// 2. 根据条件追加 --build-arg 参数
 	if With.Proxy != "" {
-		cmd += fmt.Sprintf(" --build-arg HTTP_PROXY=%s --build-arg HTTPS_PROXY=%s --build-arg NO_PROXY=localhost,127.0.0.1", With.Proxy, With.Proxy)
+		args = append(args,
+			"--build-arg", fmt.Sprintf("HTTP_PROXY=%s", With.Proxy),
+			"--build-arg", fmt.Sprintf("HTTPS_PROXY=%s", With.Proxy),
+			"--build-arg", "NO_PROXY=localhost,127.0.0.1",
+		)
 	}
-	cmd += " " + DistRoot
+	// 3. 最后追加构建上下文路径 (Context)
+	args = append(args, DistRoot)
+
 	// 重试5次
 	for tryCount := 0; tryCount < 5; tryCount++ {
-		result, wait := exec.RunShell(cmd, nil, DistRoot, true)
-		if exitCode := exec.SaveToChan(progress, result, wait); exitCode == 0 {
+		wait := exec.RunShell("docker", args, nil, DistRoot, true)
+		if exitCode := wait.WaitToChan(progress); exitCode == 0 {
 			progress <- "镜像打包完成。"
 			waitProgress()
 			return

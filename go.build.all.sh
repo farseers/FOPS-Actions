@@ -7,3 +7,7 @@ GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./dist/gitProxy -ldflags="-w -
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./dist/newBuild -ldflags="-w -s" ./newBuild
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./dist/setup-go -ldflags="-w -s" ./setup-go
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./dist/setup-npm -ldflags="-w -s" ./setup-npm
+
+docker cp ./. FOPS-Build:/var/lib/fops/actions/farseers/FOPS-Actions/v1/
+docker cp ./. FOPS-AutoBuild:/var/lib/fops/actions/farseers/FOPS-Actions/v1/
+CommidId=$(docker ps | grep fops.1 | awk '{print $1}') && docker cp ./. $CommidId:/var/lib/fops/actions/farseers/FOPS-Actions/v1/
