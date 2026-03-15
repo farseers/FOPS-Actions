@@ -191,7 +191,7 @@ func (device *gitDevice) clone(gitPath string, github string, branchOrCommitId s
 		return false
 	}
 
-	progress <- "Git代码同步完成"
+	//progress <- "Git代码同步完成"
 	return true
 }
 

@@ -26,7 +26,7 @@ func main() {
 		worker.AddGO(func() {
 			execSuccess := false
 			// 支持重试3次
-			for tryCount := 1; tryCount < 3; tryCount++ {
+			for tryCount := 1; tryCount <= 3; tryCount++ {
 				file.Delete(gitPath)
 				execSuccess = device.clone(gitPath, authHub, gitEO.Branch, context.Background())
 				if execSuccess {
