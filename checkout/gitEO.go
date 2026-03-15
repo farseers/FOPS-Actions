@@ -17,8 +17,6 @@ type GitEO struct {
 	UserPwd  string // 账户密码
 	Path     string // 存储目录
 	IsApp    bool   // 是否为应用
-
-	AutoMerge string // 自动要合并的分支名称（通常是main）
 }
 
 // GetAbsolutePath 获取git存储的绝对路径 如："/var/lib/fops/git/fops/"

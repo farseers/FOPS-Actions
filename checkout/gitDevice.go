@@ -73,10 +73,6 @@ func (device *gitDevice) CloneOrPull(git GitEO, ctx context.Context) bool {
 	} else {
 		file.Delete(gitPath)
 		execSuccess = device.clone(gitPath, git.GetAuthHub(), git.Branch, ctx)
-		// 如果是应用仓库，则克隆后需要打印当前的CommitId
-		if git.IsApp && execSuccess {
-
-		}
 	}
 	return execSuccess
 }
@@ -110,6 +106,27 @@ func (device *gitDevice) pull(savePath string, ctx context.Context) bool {
 		progress <- "Git拉取失败"
 		return false
 	}
+	return true
+}
+
+func (device *gitDevice) pullBranch(savePath string, branch string, ctx context.Context) bool {
+	// 1. 切换到指定分支
+	checkoutArgs := []string{"10", "git", "-C", savePath, "checkout", branch}
+	checkoutWait := exec.RunShellContext(ctx, "timeout", checkoutArgs, nil, "", true)
+	if exitCode := checkoutWait.WaitToChan(progress); exitCode != 0 {
+		progress <- "切换分支失败: " + branch
+		return false
+	}
+
+	// 2. 拉取并更新该分支
+	// 注意：明确指定 origin 和 branch 可以确保即使本地没追踪也能拉取成功
+	pullArgs := []string{"20", "git", "-C", savePath, "pull", "origin", branch, "--rebase"}
+	pullWait := exec.RunShellContext(ctx, "timeout", pullArgs, nil, "", true)
+	if exitCode := pullWait.WaitToChan(progress); exitCode != 0 {
+		progress <- "Git拉取更新失败"
+		return false
+	}
+
 	return true
 }
 

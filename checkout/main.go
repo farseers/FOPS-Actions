@@ -21,21 +21,23 @@ func main() {
 	worker := async.New()
 	for index := 0; index < len(With.Gits); index++ {
 		gitEO := With.Gits[index]
+		gitPath := gitEO.GetAbsolutePath()
+		authHub := gitEO.GetAuthHub()
 		worker.AddGO(func() {
 			result := false
 			// 支持重试3次
 			for tryCount := 1; tryCount < 3; tryCount++ {
-				// 克隆或更新
-				result = device.CloneOrPull(gitEO, context.Background())
-				if result {
+				file.Delete(gitPath)
+				execSuccess := device.clone(gitPath, authHub, gitEO.Branch, context.Background())
+				if execSuccess {
 					break
 				}
 				time.Sleep(time.Second * 3)
-				progress <- fmt.Sprintf("尝试第%d次拉取\n", tryCount+1)
+				progress <- fmt.Sprintf("尝试第%d次拉取: %s\n", tryCount+1, gitEO.Hub)
 			}
 
 			if !result {
-				fmt.Println("拉取出错了")
+				fmt.Println("拉取出错了: " + gitEO.Hub)
 				os.Exit(-1)
 			}
 
