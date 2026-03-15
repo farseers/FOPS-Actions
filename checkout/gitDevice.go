@@ -130,12 +130,12 @@ func (device *gitDevice) pullBranch(savePath string, branch string, ctx context.
 	return true
 }
 
-func (device *gitDevice) clone(gitPath string, github string, branch string, ctx context.Context) bool {
+func (device *gitDevice) clone_old(gitPath string, github string, branchOrCommitId string, ctx context.Context) bool {
 	// 初始化参数切片，主程序是 timeout
 	args := []string{"20", "git", "clone", "--depth=1"}
 	// 动态根据条件追加参数
-	if branch != "" {
-		args = append(args, "-b", branch)
+	if branchOrCommitId != "" {
+		args = append(args, "-b", branchOrCommitId)
 	}
 	// 追加剩余的目标地址和本地路径
 	args = append(args, github, gitPath)
@@ -145,6 +145,53 @@ func (device *gitDevice) clone(gitPath string, github string, branch string, ctx
 		progress <- "Git克隆失败"
 		return false
 	}
+	return true
+}
+func (device *gitDevice) clone(gitPath string, github string, branchOrCommitId string, ctx context.Context) bool {
+	// 1. 彻底清理并重建目录，确保环境纯净
+	os.RemoveAll(gitPath)
+	if err := os.MkdirAll(gitPath, 0755); err != nil {
+		progress <- "创建目录失败: " + err.Error()
+		return false
+	}
+
+	// 2. 初始化 Git 仓库 (使用 timeout 10)
+	initArgs := []string{"-C", gitPath, "init", "-q"}
+	initWait := exec.RunShellContext(ctx, "git", initArgs, nil, "", false)
+	if exitCode := initWait.WaitToChan(progress); exitCode != 0 {
+		progress <- "Git初始化失败"
+		return false
+	}
+
+	// 3. 添加远程仓库地址 (使用 timeout 10)
+	remoteArgs := []string{"-C", gitPath, "remote", "add", "origin", github}
+	remoteWait := exec.RunShellContext(ctx, "git", remoteArgs, nil, "", false)
+	if exitCode := remoteWait.WaitToChan(progress); exitCode != 0 {
+		progress <- "添加远程仓库失败"
+		return false
+	}
+
+	// 4. 拉取远程引用 (使用 timeout 30)
+	// 关键：fetch 所有分支的头端 (+refs/heads/*)，配合 --depth=1 性能最优
+	fetchArgs := []string{"30", "git", "-C", gitPath, "fetch", "--depth=1", "origin", "+refs/heads/*:refs/remotes/origin/*"}
+	fetchWait := exec.RunShellContext(ctx, "timeout", fetchArgs, nil, "", true)
+	if exitCode := fetchWait.WaitToChan(progress); exitCode != 0 {
+		progress <- "Git拉取远程引用失败"
+		return false
+	}
+
+	// 5. 检出目标代码 (使用 timeout 20)
+	// -c advice.detachedHead=false：彻底禁用切换到 Commit ID 时的长篇建议（防止误报）
+	// -q：静默模式，只在真正报错时产生输出
+	checkoutArgs := []string{"20", "git", "-c", "advice.detachedHead=false", "-C", gitPath, "checkout", branchOrCommitId, "-q"}
+	checkoutWait := exec.RunShellContext(ctx, "timeout", checkoutArgs, nil, "", true)
+	// 因为 WaitToChan 是指针方法，这里通过变量 checkoutWait 调用
+	if exitCode := checkoutWait.WaitToChan(progress); exitCode != 0 {
+		progress <- "Git检出失败: 找不到分支或提交 " + branchOrCommitId
+		return false
+	}
+
+	progress <- "Git代码同步完成"
 	return true
 }
 
