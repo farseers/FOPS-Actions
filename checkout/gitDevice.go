@@ -173,9 +173,18 @@ func (device *gitDevice) clone(gitPath string, github string, branchOrCommitId s
 
 	// 4. 拉取远程引用 (使用 timeout 30)
 	// 关键：fetch 所有分支的头端 (+refs/heads/*)，配合 --depth=1 性能最优
-	fetchArgs := []string{"30", "git", "-C", gitPath, "fetch", "--depth=1", "origin", "+refs/heads/*:refs/remotes/origin/*"}
+	fetchArgs := []string{"30", "git", "-c", "advice.detachedHead=false", "-C", gitPath, "fetch", "--depth=1", "origin", "+refs/heads/*:refs/remotes/origin/*"}
 	fetchWait := exec.RunShellContext(ctx, "timeout", fetchArgs, nil, "", true)
-	if exitCode := fetchWait.WaitToChan(progress); exitCode != 0 {
+	lstResult, exitCode := fetchWait.WaitToList()
+	progress <- lstResult.First()
+
+	if exitCode != 0 {
+		// 只有当出现错误时,才打印消息
+		lstResult.For(func(index int, item *string) {
+			if index > 0 {
+				progress <- *item
+			}
+		})
 		progress <- "Git拉取远程引用失败"
 		return false
 	}
@@ -185,8 +194,11 @@ func (device *gitDevice) clone(gitPath string, github string, branchOrCommitId s
 	// -q：静默模式，只在真正报错时产生输出
 	checkoutArgs := []string{"20", "git", "-c", "advice.detachedHead=false", "-C", gitPath, "checkout", branchOrCommitId, "-q"}
 	checkoutWait := exec.RunShellContext(ctx, "timeout", checkoutArgs, nil, "", true)
+	lstResult, exitCode = checkoutWait.WaitToList()
+	progress <- lstResult.First()
+
 	// 因为 WaitToChan 是指针方法，这里通过变量 checkoutWait 调用
-	if exitCode := checkoutWait.WaitToChan(progress); exitCode != 0 {
+	if exitCode != 0 {
 		progress <- "Git检出失败: 找不到分支或提交 " + branchOrCommitId
 		return false
 	}
