@@ -17,6 +17,9 @@ type GitEO struct {
 	UserPwd  string // 账户密码
 	Path     string // 存储目录
 	IsApp    bool   // 是否为应用
+	// 非数据库字段
+	EnableBackDefaultBranch bool   // 匹配失败时退回到默认分支
+	CommitId                string // 框架提交ID
 }
 
 // GetAbsolutePath 获取git存储的绝对路径 如："/var/lib/fops/git/fops/"
@@ -58,11 +61,18 @@ func (receiver *GitEO) GetRawContent(filePath string) string {
 	gitUrl := receiver.GetAuthHub()
 	if strings.Contains(gitUrl, "github.com") {
 		// 移除.git后缀 https://raw.githubusercontent.com/farseers/FOPS/main/.fops/workflows/build.yml
-		if strings.HasSuffix(gitUrl, ".git") {
-			gitUrl = gitUrl[:len(gitUrl)-4]
-		}
+		gitUrl = strings.TrimSuffix(gitUrl, ".git")
 		gitUrl = gitUrl + "/" + receiver.Branch + "/" + filePath
 		gitUrl = strings.ReplaceAll(gitUrl, "github.com", "raw.githubusercontent.com")
 	}
 	return gitUrl
+}
+
+// 开启自动回退默认分支时,会返回当前的默认分支,否则返回空
+func (receiver *GitEO) GetDefaultBranch() string {
+	// 开启自动回退
+	if receiver.EnableBackDefaultBranch {
+		return receiver.Branch
+	}
+	return ""
 }

@@ -28,7 +28,7 @@ func main() {
 			// 支持重试3次
 			for tryCount := 1; tryCount <= 3; tryCount++ {
 				ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-				execSuccess = device.clone(gitPath, authHub, gitEO.Branch, "main", ctx)
+				execSuccess = device.clone(gitPath, authHub, gitEO.CommitId, gitEO.GetDefaultBranch(), ctx)
 				if execSuccess {
 					break
 				}
