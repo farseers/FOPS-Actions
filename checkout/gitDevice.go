@@ -252,7 +252,7 @@ func (device *gitDevice) clone(gitPath string, github string, branchOrCommitId s
 
 	// --- 2. 类型判断 ---
 	// 修正正则：长度 >=7 视为 CommitID，否则视为分支/Tag
-	// 这样 "1407" 会进入分支逻辑，避免被误判为 CommitID 导致歧义报错
+	// 这样 "分支" 会进入分支逻辑，避免被误判为 CommitID 导致歧义报错
 	isCommitID := regexp.MustCompile(`^[0-9a-fA-F]{7,40}$`).MatchString(branchOrCommitId)
 
 	if isCommitID {
@@ -269,9 +269,9 @@ func (device *gitDevice) cloneByBranchOrTag(gitPath string, github string, branc
 
 	// 分支不存在
 	if exitCode != 0 {
-		progress <- fmt.Sprintf("%s, 没有找到%s分支,尝试退回到%s分支", github, branchName, defaultBranch)
 		// 没有找到分支,尝试退回到默认分支
 		if lstResult.ContainsAny("Could not find remote") && defaultBranch != "" {
+			progress <- fmt.Sprintf("%s, 没有找到%s分支,尝试退回到%s分支", github, branchName, defaultBranch)
 			wait = exec.RunShellContext(ctx, "git", []string{"clone", "--depth=1", "-b", defaultBranch, github, gitPath}, nil, "", true)
 			lstResult, exitCode := wait.WaitToList()
 			progress <- lstResult.First()
