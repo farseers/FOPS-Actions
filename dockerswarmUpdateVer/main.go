@@ -78,11 +78,10 @@ func main() {
 	}
 
 	// 更新到本地
-	dockerClient := docker.NewClient()
 	// 首次创建还是更新镜像
-	if exists := dockerClient.Service.Exists(With.AppName); exists {
+	if exists := docker.DefaultClient.Service.Exists(With.AppName); exists {
 		// 更新镜像
-		wait := dockerClient.Service.SetImages(With.AppName, With.DockerImage, With.UpdateDelay)
+		wait := docker.DefaultClient.Service.SetImages(With.AppName, With.DockerImage, With.UpdateDelay)
 		if exitCode := wait.WaitToChan(progress); exitCode != 0 {
 			// 等待退出
 			waitProgress()
@@ -91,11 +90,11 @@ func main() {
 	} else {
 
 		// 准备配置文件
-		lastVersion, err := dockerClient.Config.GetLastVersion(With.AppName)
+		lastVersion, err := docker.DefaultClient.Config.GetLastVersion(With.AppName)
 		exception.ThrowRefuseExceptionError(err)
 
 		// 创建容器服务
-		wait := dockerClient.Service.Create(With.AppName, With.DockerNodeRole, With.AdditionalScripts, With.DockerNetwork, With.DockerReplicas, With.DockerImage, With.LimitCpus, With.LimitMemory, docker.ConfigTarget{
+		wait := docker.DefaultClient.Service.Create(With.AppName, With.DockerNodeRole, With.AdditionalScripts, With.DockerNetwork, With.DockerReplicas, With.DockerImage, With.LimitCpus, With.LimitMemory, docker.ConfigTarget{
 			Name:   lastVersion.Spec.Name,
 			Target: "/app/config.yaml",
 		})
