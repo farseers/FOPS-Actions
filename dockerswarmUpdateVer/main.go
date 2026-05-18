@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 
 	"fmt"
@@ -17,6 +18,8 @@ import (
 )
 
 var client = &http.Client{
+	// 比服务端 SetImages 的 5 分钟超时多留 1 分钟，让服务端先超时返回
+	Timeout: 6 * time.Minute,
 	Transport: &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true, // 不验证 HTTPS 证书
@@ -80,8 +83,10 @@ func main() {
 	// 更新到本地
 	// 首次创建还是更新镜像
 	if exists := docker.DefaultClient.Service.Exists(With.AppName); exists {
-		// 更新镜像
-		wait := docker.DefaultClient.Service.SetImages(With.AppName, With.DockerImage, With.UpdateDelay)
+		// 更新镜像（5 分钟超时；外层有 retry，超时后会再次下发更新指令，swarm 会继续滚动）
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+		wait := docker.DefaultClient.Service.SetImagesContext(ctx, With.AppName, With.DockerImage, With.UpdateDelay)
 		if exitCode := wait.WaitToChan(progress); exitCode != 0 {
 			// 等待退出
 			waitProgress()
