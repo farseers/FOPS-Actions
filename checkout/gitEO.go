@@ -47,7 +47,7 @@ func (receiver *GitEO) GetName() string {
 // GetAuthHub 获取带账号密码的地址 如："https://steden:123456@github.com/farseer-go/fs.git"
 func (receiver *GitEO) GetAuthHub() string {
 	parsedURL, err := url.Parse(receiver.Hub)
-	exception.ThrowRefuseExceptionfBool(err != nil, "解析 URL 失败:%s", err)
+	exception.ThrowWebExceptionfBool(err != nil, 403, "解析 URL 失败:%s", err)
 
 	// 设置用户名和密码
 	parsedURL.User = url.UserPassword(receiver.UserName, receiver.UserPwd)

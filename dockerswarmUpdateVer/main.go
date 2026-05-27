@@ -96,7 +96,7 @@ func main() {
 
 		// 准备配置文件
 		lastVersion, err := docker.DefaultClient.Config.GetLastVersion(With.AppName)
-		exception.ThrowRefuseExceptionError(err)
+		exception.ThrowWebExceptionError(403, err)
 
 		// 创建容器服务
 		wait := docker.DefaultClient.Service.Create(With.AppName, With.DockerNodeRole, With.AdditionalScripts, With.DockerNetwork, With.DockerReplicas, With.DockerImage, With.LimitCpus, With.LimitMemory, docker.ConfigTarget{
