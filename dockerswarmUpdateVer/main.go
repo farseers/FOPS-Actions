@@ -37,7 +37,7 @@ func main() {
 		}
 		fopsAddr := With.FopsAddr + "apps/updateDockerImage"
 
-		bodyByte, _ := snc.Marshal(map[string]any{"appName": With.AppName, "dockerImage": With.DockerImage, "updateDelay": With.UpdateDelay, "buildNumber": With.BuildNumber, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd})
+		bodyByte, _ := snc.Marshal(map[string]any{"appName": With.AppName, "remoteCluster": With.RemoteCluster, "dockerImage": With.DockerImage, "updateDelay": With.UpdateDelay, "buildNumber": With.BuildNumber, "dockerHub": With.DockerHub, "dockerUserName": With.DockerUserName, "dockerUserPwd": With.DockerUserPwd})
 		progress <- "开始更新远程fops：" + fopsAddr + " " + string(bodyByte)
 
 		isSuccess := false

@@ -48,6 +48,8 @@ type WithAvg struct {
 	GitUserPwd  string `json:"gitUserPwd"`  // 账户密码
 	GitPath     string `json:"gitPath"`     // 存储目录
 
+	RemoteCluster int `json:"remoteCluster"` // 远程集群ID
+
 	Proxy string `json:"proxy"` // Git代理
 }
 
